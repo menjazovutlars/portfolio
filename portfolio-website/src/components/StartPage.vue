@@ -24,7 +24,13 @@ export default {
   name: "StartPage",
   components: { TextBox, ContentBox },
   data() {
-    return { compTextBox: "TextBox", compContBox: "ContentBox" };
+    return {
+      compTextBox: "TextBox",
+      compContBox: "ContentBox",
+      timer: function (miliseconds, action) {
+        setTimeout(action, miliseconds);
+      },
+    };
   },
 };
 </script>
