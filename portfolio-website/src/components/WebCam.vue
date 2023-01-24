@@ -1,7 +1,7 @@
 <template>
   <v-container full-height fluid>
-    <video v-show="true" ref="video" autoplay></video>
-    <canvas id="webcamCanvas"> </canvas>
+    <video ref="video" autoplay></video>
+    <canvas v-show="false" id="webcamCanvas"> </canvas>
   </v-container>
 </template>
 
@@ -14,6 +14,7 @@ export default {
       isWebcamOpen: false,
       isLoading: false,
       isTensorflowLoaded: false,
+      isShowing: false,
     };
   },
   created() {
@@ -42,11 +43,12 @@ export default {
           console.log(stream);
           this.isLoading = false;
           this.$refs.video.srcObject = stream;
-          const canvas = document.getElementById("webcamCanvas"),
+          /*const canvas = document.getElementById("webcamCanvas"),
             context = canvas.getContext("2d");
-          this.$refs.video.play();
-          console.log(this.$refs.video);
-          context.drawImage(this.$refs.video, 0, 0);
+          createImageBitmap(stream).then((video) => {
+            console.log(video);
+            context.drawImage(video, 0, 0);
+          });*/
         })
         .catch((err) => {
           this.isLoading = false;

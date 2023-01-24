@@ -5,7 +5,7 @@
       to make myself feel special. For this you will need a functioning and
       connected webcam.
     </p>
-    <p class="black--text text-h5 intro__subtitle">
+    <p class="black--text body-1 intro__subtitle">
       Do you have a webcam connected?
     </p>
     <v-container d-flex justify-space-around v-bind:style="{ padding: 0 }">
@@ -25,8 +25,18 @@
 export default {
   name: "ThirdMessage",
   methods: {
+    nextMessage: function () {
+      this.$root.$refs.TextBox.changeMessage(
+        this.$root.$refs.TextBox.fourthMessageA,
+        "mdi-thumb-up"
+      );
+    },
     checkWebCam: function () {
-      this.$root.$refs.WebCam.toggleWebcam();
+      this.nextMessage();
+      setTimeout(() => {
+        this.$root.$refs.WebCam.toggleWebcam();
+        this.$root.$refs.ContentBox.state.showing = true;
+      }, 2000);
     },
   },
 };

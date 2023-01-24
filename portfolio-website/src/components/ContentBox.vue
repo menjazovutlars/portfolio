@@ -1,6 +1,12 @@
 <template>
-  <v-container fill-height fluid :class="{ hideOverflow: state.overflow }">
+  <v-container
+    fill-height
+    fluid
+    align-items-center
+    :class="{ hideOverflow: state.overflow, 'content-box': true }"
+  >
     <Icons
+      v-show="!state.showing"
       v-bind:icon="icons.currentIcon"
       :class="{
         'waving-hand': state.wavingHand,
@@ -8,7 +14,7 @@
         'icon-rotation__in': state.rotateIn,
       }"
     ></Icons>
-    <WebCam></WebCam>
+    <WebCam v-show="state.showing" :class="{ popup: state.showing }"></WebCam>
   </v-container>
 </template>
 
@@ -38,6 +44,7 @@ export default {
         rotateIn: false,
         wavingHand: true,
         overflow: false,
+        showing: false,
       },
     };
   },
@@ -78,8 +85,11 @@ export default {
 .hideOverflow {
   overflow: hidden;
 }
-.icon__intro {
-  color: black;
+
+.content-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .waving-hand {
@@ -95,6 +105,10 @@ export default {
 .icon-rotation__in {
   transform-origin: 50% 150%;
   animation: rotation-in ease-out 0.4s 0s;
+}
+
+.popup {
+  animation: popup ease-in-out 2s 0s 1;
 }
 
 @keyframes wave {
@@ -162,6 +176,22 @@ export default {
     //transform: rotate(-360deg);
     transform: translateY(0px);
     opacity: 100%;
+  }
+}
+
+@keyframes popup {
+  0% {
+    transform: scale(1);
+    opacity: 0%;
+  }
+
+  40% {
+    opacity: 100%;
+    transform: scale(2);
+  }
+
+  70% {
+    transform: scale(1);
   }
 }
 </style>

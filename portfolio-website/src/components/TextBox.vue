@@ -10,32 +10,34 @@
 import FirstMessage from "./chatmessages/FirstMessage.vue";
 import SecondMessage from "./chatmessages/SecondMessage.vue";
 import ThirdMessage from "./chatmessages/ThirdMessage.vue";
-import FourthMessage from "./chatmessages/FourthMessage.vue";
-import FifthMessageA from "./chatmessages/FifthMessageA.vue";
-import FifthMessageB from "./chatmessages/FifthMessageB.vue";
+import FourthMessageA from "./chatmessages/FourthMessageA.vue";
+import FourthMessageB from "./chatmessages/FourthMessageB.vue";
 export default {
   name: "TextBox",
   components: {
     FirstMessage,
     SecondMessage,
     ThirdMessage,
-    FourthMessage,
-    FifthMessageA,
-    FifthMessageB,
+
+    FourthMessageA,
+    FourthMessageB,
   },
   data: function () {
     return {
       firstMessage: "FirstMessage",
       secondMessage: "SecondMessage",
       thirdMessage: "ThirdMessage",
-      fourthMessage: "FourthMessage",
-      fifthMessageA: "FifthMessageA",
-      fifthMessageB: "FifthMessageB",
+
+      fourthMessageA: "FourthMessageA",
+      fourthMessageB: "FourthMessageB",
       displayedMessage: "FirstMessage",
     };
   },
+  created() {
+    this.$root.$refs.TextBox = this;
+  },
   mounted() {
-    setTimeout(() => {
+    /**setTimeout(() => {
       this.displayedMessage = this.secondMessage;
       this.$root.$refs.ContentBox.setIcon("mdi-human-male-board");
     }, 1000);
@@ -43,6 +45,13 @@ export default {
       this.displayedMessage = this.thirdMessage;
       this.$root.$refs.ContentBox.setIcon("mdi-video");
     }, 2000);
+    */
+  },
+  methods: {
+    changeMessage: function (message, icon) {
+      this.displayedMessage = message;
+      this.$root.$refs.ContentBox.setIcon(icon);
+    },
   },
 };
 </script>
