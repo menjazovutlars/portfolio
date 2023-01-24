@@ -1,5 +1,5 @@
 <template>
-  <v-icon color="black" size="200" class="icon__intro waving-hand" x- large>
+  <v-icon color="black" size="200" class="icon__intro" default>
     {{ icon }}</v-icon
   >
 </template>
