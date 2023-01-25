@@ -39,8 +39,11 @@ export default {
     },
     checkWebCam: function () {
       this.nextMessageA();
+      console.log(this.$root.$refs.StartPage);
+      this.$root.$refs.StartPage.colsTextBox.col6 = false;
       setTimeout(() => {
         this.$root.$refs.WebCam.toggleWebcam();
+        this.$root.$refs.WebCam.isShowing = true;
         this.$root.$refs.ContentBox.state.showing = true;
       }, 2000);
     },

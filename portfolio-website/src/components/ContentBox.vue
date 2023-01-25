@@ -5,6 +5,7 @@
     align-items-center
     :class="{ hideOverflow: state.overflow, 'content-box': true }"
   >
+    <Canvas v-show="state.showing"></Canvas>
     <Icons
       v-show="!state.showing"
       v-bind:icon="icons.currentIcon"
@@ -14,19 +15,24 @@
         'icon-rotation__in': state.rotateIn,
       }"
     ></Icons>
-    <WebCam v-show="state.showing" :class="{ popup: state.showing }"></WebCam>
+    <WebCamIntro
+      v-show="state.showing"
+      :class="{ popup: state.showing }"
+    ></WebCamIntro>
   </v-container>
 </template>
 
 <script>
 import Icons from "./Icons.vue";
-import WebCam from "./WebCam.vue";
+import WebCamIntro from "./WebCamIntro.vue";
+import Canvas from "./Canvas.vue";
 //import MorphingIcons from "./MorphingIcons.vue";
 export default {
   name: "ContentBox",
   components: {
     Icons,
-    WebCam,
+    WebCamIntro,
+    Canvas,
   },
   data() {
     return {

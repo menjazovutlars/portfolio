@@ -6,9 +6,11 @@ import vuetify from "./plugins/vuetify";
 import VueWorker from "vue-worker";
 import { fp } from "./plugins/fingerpose";
 import handpose from "@tensorflow-models/handpose";
+const createjs = window.createjs;
 
 Vue.config.productionTip = false;
 Vue.use(VueWorker);
+Vue.prototype.createjs = createjs;
 
 new Vue({
   router,
