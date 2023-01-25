@@ -13,7 +13,7 @@
         <v-icon left default> mdi-check-bold </v-icon>
         <span>Yes, I have.</span></v-btn
       >
-      <v-btn text color="red" x-large>
+      <v-btn text color="red" x-large @click="nextMessageB">
         <v-icon left default> mdi-close</v-icon>
         <span>No, I haven't.</span></v-btn
       >
@@ -25,14 +25,20 @@
 export default {
   name: "ThirdMessage",
   methods: {
-    nextMessage: function () {
+    nextMessageA: function () {
       this.$root.$refs.TextBox.changeMessage(
         this.$root.$refs.TextBox.fourthMessageA,
         "mdi-thumb-up"
       );
     },
+    nextMessageB: function () {
+      this.$root.$refs.TextBox.changeMessage(
+        this.$root.$refs.TextBox.fourthMessageB,
+        "mdi-thumb-up"
+      );
+    },
     checkWebCam: function () {
-      this.nextMessage();
+      this.nextMessageA();
       setTimeout(() => {
         this.$root.$refs.WebCam.toggleWebcam();
         this.$root.$refs.ContentBox.state.showing = true;

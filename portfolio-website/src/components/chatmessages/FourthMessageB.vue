@@ -1,13 +1,14 @@
 <template>
   <p class="black--text text-subtitle-1 intro__subtitle">
-    Great! Now make sure one of your hands is able to be detected by your
-    camera.
+    No worries. You can navigate the website as you usually do. The funny
+    gimmick was navigating the website with your hands. If you have a webcam
+    connected and want to try it out just reload the page. ;)
   </p>
 </template>
 
 <script>
 export default {
-  name: "FifthMessageB",
+  name: "FourthMessageB",
 };
 </script>
 

@@ -20,6 +20,7 @@
 <script>
 import TextBox from "./TextBox.vue";
 import ContentBox from "./ContentBox.vue";
+
 export default {
   name: "StartPage",
   components: { TextBox, ContentBox },

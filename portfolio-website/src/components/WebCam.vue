@@ -6,6 +6,12 @@
 </template>
 
 <script>
+import MotionCapture from "@/plugins/motionCapture";
+import * as fingerpose from "../plugins/fingerpose";
+import * as tf from "@tensorflow/tfjs";
+import * as handpose from "@tensorflow-models/handpose";
+import * as posenet from "@tensorflow-models/posenet";
+
 export default {
   name: "WebCam",
   data() {
@@ -15,11 +21,13 @@ export default {
       isLoading: false,
       isTensorflowLoaded: false,
       isShowing: false,
+      motionCapture: "",
     };
   },
   created() {
     this.$root.$refs.WebCam = this;
   },
+  mounted() {},
   methods: {
     toggleWebcam() {
       if (this.isWebcamConnected) {
@@ -50,6 +58,9 @@ export default {
             context.drawImage(video, 0, 0);
           });*/
         })
+        .then(() => {
+          this.startMotionCapture();
+        })
         .catch((err) => {
           this.isLoading = false;
           alert("Something went wrong with the webcam." + err);
@@ -61,6 +72,19 @@ export default {
       tracks.forEach((track) => {
         track.stop();
       });
+    },
+    startMotionCapture() {
+      this.motionCapture = new MotionCapture(
+        document,
+        navigator,
+        this.$refs.video,
+        posenet,
+        handpose,
+        tf,
+        fingerpose
+      );
+      console.log("asdsajkhasdhjk");
+      this.motionCapture.captureMotion();
     },
   },
 };
