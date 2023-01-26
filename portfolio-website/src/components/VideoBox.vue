@@ -1,5 +1,7 @@
 <template>
-  <video ref="video" autoplay class="camera-feed" id="camera-feed"></video>
+  <keep-alive>
+    <video ref="video" autoplay class="camera-feed" id="camera-feed"></video>
+  </keep-alive>
 </template>
 
 <script>
@@ -14,5 +16,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped></style>

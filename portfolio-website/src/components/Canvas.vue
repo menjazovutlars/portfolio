@@ -1,8 +1,14 @@
 <template>
   <v-container :style="{ padding: 0 }">
-    <div class="estimated-gesture" id="estimated-gesture">
-      <p>Keine Geste erkannt.</p>
+    <div class="info-gesture">
+      <div class="estimated-gesture" id="estimated-gesture">
+        <p>{{ gesture }}</p>
+      </div>
+      <div id="estimated-direction" class="justify-end">
+        <p>{{ direction }}</p>
+      </div>
     </div>
+
     <canvas id="webcamCanvas" class="canvas"> </canvas>
   </v-container>
 </template>
@@ -16,9 +22,10 @@ export default {
       ctx: "",
       webcam: "",
       video: "",
-      gesture: "",
+      gesture: "No gesture detected.",
       hx: "",
       hy: "",
+      direction: "No direction estimated.",
     };
   },
   created() {
@@ -32,7 +39,6 @@ export default {
     this.video = this.$root.$refs.VideoBox.$refs.video;
     this.cv = document.getElementById("webcamCanvas");
     this.ctx = this.cv.getContext("2d");
-    this.gesture = document.getElementById("estimated-gesture");
   },
   methods: {
     resizeCanvas: function (element) {
@@ -110,5 +116,11 @@ export default {
   flex-shrink: 4;
   flex-basis: 50vw;
   object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.info-gesture {
+  margin: unset;
+  width: 100%;
 }
 </style>

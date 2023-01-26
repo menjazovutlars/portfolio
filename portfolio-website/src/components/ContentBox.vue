@@ -1,11 +1,9 @@
 <template>
   <v-container
     fill-height
-    fluid
     align-items-center
     :class="{ hideOverflow: state.overflow, 'content-box': true }"
-  >
-    <Canvas v-show="state.showing"></Canvas>
+    ><Canvas v-show="state.showing"></Canvas>
     <Icons
       v-show="!state.showing"
       v-bind:icon="icons.currentIcon"
@@ -57,6 +55,7 @@ export default {
   created() {
     this.$root.$refs.ContentBox = this;
   },
+  mounted() {},
   methods: {
     toggleIconRotation: function () {
       this.state.wavingHand = false;

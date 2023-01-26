@@ -1,36 +1,30 @@
 <template lang="">
   <v-app>
-    <v-container fill-height fluid d-flex justify center id="stage">
-      <v-row align="center" justify="center">
-        <v-col :class="[colsTextBox.col6 ? 'col-6' : 'col-4']">
-          <keep-alive>
-            <component v-bind:is="compTextBox"></component>
-          </keep-alive>
-        </v-col>
-        <v-col :class="[colsContBox.col6 ? 'col-6' : 'col-4']">
-          <keep-alive>
-            <component v-bind:is="compContBox"></component>
-          </keep-alive>
-        </v-col>
-      </v-row>
+    <v-container d-flex justify center>
+      <v-component id="stage" v-bind:is="stage"></v-component>
     </v-container>
   </v-app>
 </template>
 
 <script>
-import TextBox from "./TextBox.vue";
-import ContentBox from "./ContentBox.vue";
+import ProjectPageCenter from "./projectpages/ProjectPageCenter.vue";
+import ProjectPageDown from "./projectpages/ProjectPageDown.vue";
+import ProjectPageLeft from "./projectpages/ProjectPageLeft.vue";
+import ProjectPageRight from "./projectpages/ProjectPageRight.vue";
+import ProjectPageUp from "./projectpages/ProjectPageUp.vue";
 
 export default {
   name: "StartPage",
-  components: { TextBox, ContentBox },
+  components: {
+    ProjectPageCenter,
+    ProjectPageDown,
+    ProjectPageLeft,
+    ProjectPageRight,
+    ProjectPageUp,
+  },
   data() {
     return {
-      compTextBox: "TextBox",
-      compContBox: "ContentBox",
-      timer: function (miliseconds, action) {
-        setTimeout(action, miliseconds);
-      },
+      stage: "ProjectPageCenter",
       colsContBox: {
         col6: true,
       },
@@ -42,10 +36,76 @@ export default {
   created() {
     this.$root.$refs.StartPage = this;
   },
+  methods: {
+    switchTo(name, direction) {
+      console.log(name, direction);
+      console.log(this.stage);
+      switch (name) {
+        case "ProjectPageCenter":
+          switch (direction) {
+            case "up":
+              this.stage = "ProjectPageUp";
+              break;
+            case "right":
+              this.stage = "ProjectPageRight";
+              break;
+            case "left":
+              this.stage = "ProjectPageLeft";
+              break;
+            case "down":
+              this.stage = "ProjectPageDown";
+              break;
+            default:
+              break;
+          }
+          break;
+        case "ProjectPageDown":
+          switch (direction) {
+            case "up":
+              this.stage = "ProjectPageCenter";
+              break;
+            default:
+              break;
+          }
+          break;
+        case "ProjectPageLeft":
+          switch (direction) {
+            case "right":
+              this.stage = "ProjectPageCenter";
+              break;
+            default:
+              break;
+          }
+          break;
+        case "ProjectPageRight":
+          switch (direction) {
+            case "left":
+              this.stage = "ProjectPageCenter";
+              break;
+            default:
+              break;
+          }
+          break;
+        case "ProjectPageUp":
+          switch (direction) {
+            case "down":
+              console.log("me here");
+              this.stage = "ProjectPageCenter";
+              break;
+            default:
+              break;
+          }
+          break;
+        default:
+          break;
+      }
+    },
+  },
 };
 </script>
 <style scoped>
 #stage {
   max-width: 70%;
+  padding: 0;
 }
 </style>

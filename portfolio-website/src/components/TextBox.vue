@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-container fill-height fluid>
+    <v-container fill-height>
       <component v-bind:is="displayedMessage"></component>
     </v-container>
   </v-app>
@@ -18,7 +18,6 @@ export default {
     FirstMessage,
     SecondMessage,
     ThirdMessage,
-
     FourthMessageA,
     FourthMessageB,
   },
