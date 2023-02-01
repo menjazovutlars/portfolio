@@ -51,7 +51,9 @@ export default {
       roomLeft: "",
       fontLoader: "",
       signText: "",
+      pointingIcon: "",
       signModel: "",
+      doors: [],
     };
   },
   created() {
@@ -107,6 +109,7 @@ export default {
       this.fontLoader = new FontLoader();
 
       this.createText();
+      this.createSymbol();
 
       this.addCube();
 
@@ -129,6 +132,54 @@ export default {
       this.roomUp.castShadow = true;
       this.roomUp.receiveShadow = true;
       this.scene.add(this.roomUp);
+    },
+
+    createSymbol: function () {
+      const material = new THREE.MeshStandardMaterial({
+        color: 0xf7d4e1,
+        emissive: 0xf7d4e1,
+        emissiveIntensity: 1,
+        metalness: 0.3,
+      });
+
+      /*
+      const material = this.loadTextures(
+        "./assets/materials/glass-frosted/Glass_Frosted_001_basecolor.jpg",
+        "./assets/materials/glass-frosted/Glass_Frosted_001_normal.jpg",
+        "./assets/materials/glass-frosted/Glass_Frosted_001_height.png",
+        "./assets/materials/glass-frosted/Glass_Frosted_001_roughness.jpg",
+        "./assets/materials/glass-frosted/Glass_Frosted_001_ambientOcclusion.jpg",
+        "",
+        0.1,
+        0.2,
+        "",
+        0xdb3774,
+        1
+      );  
+      */
+
+      this.fontLoader.load(
+        "./assets/fonts/Noto Sans Symbols 2_Regular.json",
+        (font) => {
+          const textGeometry = new TextGeometry("☜", {
+            font: font,
+            size: 10,
+            height: 0.2,
+            curveSegments: 20,
+            bevelEnabled: true,
+            bevelThickness: 0.1,
+            bevelSize: 0.1,
+            bevelOffset: -0.05,
+            bevelSegments: 10,
+          });
+
+          textGeometry.computeBoundingBox();
+
+          this.pointingIcon = new THREE.Mesh(textGeometry, material);
+          this.pointingIcon.position.set(0, 10, 0);
+          this.signModel.add(this.pointingIcon);
+        }
+      );
     },
 
     createText: function () {
@@ -209,7 +260,7 @@ export default {
 
       this.signModel = new THREE.Group();
       this.signModel.add(signFrame, sign);
-      this.signModel.position.set(-39, -10, -30);
+      this.signModel.position.set(-39.95, -18, -20);
       this.signModel.rotation.set(0, THREE.MathUtils.degToRad(90), 0);
       this.scene.add(this.signModel);
     },
