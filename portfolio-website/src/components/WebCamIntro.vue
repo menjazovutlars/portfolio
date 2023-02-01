@@ -35,6 +35,7 @@ export default {
       interval: "",
       streamOutput: {},
       canvas: "",
+      canvasBG: "",
       video: "",
       videoOffscreen: "",
       gesture: "",
@@ -51,6 +52,7 @@ export default {
   },
   mounted() {
     this.canvas = this.$root.$refs.Canvas;
+    this.canvasBG = this.$root.$refs.CanvasBG;
     this.video = this.$root.$refs.VideoBox.$refs.video;
     this.videoOffscreen = this.$root.$refs.VideoBoxOffscreen.$refs.video;
     this.gesture = this.$root.$refs.Canvas.gesture;
@@ -102,6 +104,7 @@ export default {
               this.video.srcObject = stream;
               this.videoOffscreen.srcObject = stream;
               this.captureMotion(this.videoOffscreen);
+              this.$root.$refs.CanvasBG.addVideoCube("camera-feed");
             })
             .catch((error) => {
               alert("Something went wrong!", error);
@@ -139,6 +142,7 @@ export default {
     },
 
     responseToGesture(gesture, predictions) {
+      this.canvasBG.draw3dLine(predictions);
       switch (gesture) {
         case "index_pointing":
           this.detectHandDirection(predictions);

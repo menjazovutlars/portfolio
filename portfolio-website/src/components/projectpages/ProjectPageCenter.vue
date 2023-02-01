@@ -1,6 +1,6 @@
 <template>
   <v-container fill-height fluid d-flex justify center>
-    <v-row align="center" justify="center">
+    <v-row align="center" justify="center" class="in-front">
       <v-col :class="[colsTextBox.col6 ? 'col-6' : 'col-4']">
         <component v-bind:is="compTextBox"></component>
       </v-col>
@@ -42,4 +42,8 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.in-front {
+  z-index: 1000;
+}
+</style>

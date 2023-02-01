@@ -1,6 +1,7 @@
 <template lang="">
   <v-app>
-    <v-container d-flex justify center>
+    <v-container d-flex justify center fluid fill-height>
+      <CanvasBackground></CanvasBackground>
       <v-component id="stage" v-bind:is="stage"></v-component>
     </v-container>
   </v-app>
@@ -12,6 +13,7 @@ import ProjectPageDown from "./projectpages/ProjectPageDown.vue";
 import ProjectPageLeft from "./projectpages/ProjectPageLeft.vue";
 import ProjectPageRight from "./projectpages/ProjectPageRight.vue";
 import ProjectPageUp from "./projectpages/ProjectPageUp.vue";
+import CanvasBackground from "./CanvasBackground.vue";
 
 export default {
   name: "StartPage",
@@ -21,6 +23,7 @@ export default {
     ProjectPageLeft,
     ProjectPageRight,
     ProjectPageUp,
+    CanvasBackground,
   },
   data() {
     return {
