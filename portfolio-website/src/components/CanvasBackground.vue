@@ -1,7 +1,14 @@
 <template>
   <v-container>
     <canvas id="canvas-bg"></canvas>
-    <span id="canvas-hand"></span>
+    <span id="canvas-hand">
+      <p>x:{{ cameraPosition.x }}</p>
+      <p>y:{{ cameraPosition.y }}</p>
+      <p>z:{{ cameraPosition.z }}</p>
+      <p>rotX:{{ cameraPosition.rotation.x }}</p>
+      <p>rotY:{{ cameraPosition.rotation.y }}</p>
+      <p>rotZ:{{ cameraPosition.rotation.z }}</p>
+    </span>
   </v-container>
 </template>
 
@@ -12,6 +19,7 @@ import * as THREE from "three";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
+import gsap from "gsap";
 
 /*
 0xDB3774
@@ -28,6 +36,7 @@ export default {
     return {
       scene: "",
       camera: "",
+      cameraPosition: { x: "", y: "", z: "", rotation: "" },
       cameraHand: "",
       renderer: "",
       torus: "",
@@ -44,16 +53,13 @@ export default {
       textureLoader: "",
       videoCubeVisible: "",
       videoCube: "",
-      roomCenter: "",
-      roomUp: "",
-      roomRight: "",
-      roomDown: "",
-      roomLeft: "",
+      rooms: [],
       fontLoader: "",
       signText: "",
       pointingIcon: "",
-      signModel: "",
-      doors: [],
+      signModels: [],
+      signIndexTexts: 0,
+      signIndexSymbols: 0,
     };
   },
   created() {
@@ -75,6 +81,8 @@ export default {
         0.1,
         1000
       );
+
+      this.camera.position.set(5, -2, 0);
 
       this.renderer = new THREE.WebGLRenderer({
         canvas: document.querySelector("#canvas-bg"),
@@ -98,43 +106,158 @@ export default {
       
       */
 
+      /*
+
       this.pointLight = new THREE.PointLight(0xffffff);
       this.pointLight.position.set(0, 10, 35);
       this.pointLight.castShadow = false;
       this.scene.add(this.pointLight);
-
-      this.camera.position.setZ(20);
+      */
 
       this.textureLoader = new THREE.TextureLoader();
       this.fontLoader = new FontLoader();
 
-      this.createText();
-      this.createSymbol();
+      //this.createText();
+      //this.createSymbol();
 
-      this.addCube();
+      this.addRoom(this.roomCenter, true, 80, 80, 100, 0x8fe1f2, 0, 0, 0, {
+        doors: [
+          {
+            direction: "up",
+            sign: "456666666 1",
+          },
+          {
+            direction: "right",
+            sign: "Project 2",
+          },
+          {
+            direction: "down",
+            sign: "Project 3",
+          },
+          {
+            direction: "left",
+            sign: "Project 4",
+          },
+        ],
+      });
 
-      this.addDoor();
+      this.addRoom(this.roomCenter, false, 80, 80, 100, 0xf2b67c, 0, 0, -101, {
+        doors: [
+          {
+            direction: "up",
+            sign: "Project 1",
+          },
+          {
+            direction: "right",
+            sign: "sfaasfasfasfasfsafsaf",
+          },
+          {
+            direction: "down",
+            sign: "Project 3",
+          },
+          {
+            direction: "left",
+            sign: "Project 4",
+          },
+        ],
+      });
 
-      this.addSign();
+      /*
+      this.addRoom(this.roomUp, 80, 50, 100, 0x8fe1f2, 0, 0, -100.5, 0);
+      this.addRoom(this.roomRight, 80, 50, 100, 0x8fe1f2, 80.5, 0, 0, 0);
+      this.addRoom(this.roomDown, 80, 50, 100, 0x8fe1f2, 0, 0, 100.5, 0);
+      this.addRoom(this.roomLeft, 80, 50, 100, 0x8fe1f2, -80.5, 0, 0, 0);
+      */
+
+      //this.addDoor();
+
+      //this.addSign();
 
       this.renderer.render(this.scene, this.camera);
+      console.log(this.rooms);
+      console.log(this.rooms[1].position);
 
       //this.addTorus();
     },
-    addCube: function () {
-      const geometry = new THREE.BoxGeometry(80, 50, 100);
+    addRoom: function (
+      room,
+      visible,
+      width,
+      height,
+      depth,
+      color,
+      posX,
+      posY,
+      posZ,
+      doorOptions
+    ) {
+      const geometry = new THREE.BoxGeometry(width, height, depth);
       const material = new THREE.MeshStandardMaterial({
-        color: 0x8fe1f2,
+        color: color,
         side: THREE.BackSide,
       });
 
-      this.roomUp = new THREE.Mesh(geometry, material);
-      this.roomUp.castShadow = true;
-      this.roomUp.receiveShadow = true;
-      this.scene.add(this.roomUp);
+      room = new THREE.Group();
+
+      const roomInstance = new THREE.Mesh(geometry, material);
+
+      //this.roomUp.castShadow = true;
+
+      //room.position.set(posX, posY, posZ);
+      roomInstance.receiveShadow = true;
+
+      this.addDoorModels(width, height, depth, posX, posY, posZ, doorOptions);
+
+      const light = new THREE.PointLight(0xffffff, 1, 300, 1);
+      light.position.set(0, 35, 0);
+      light.castShadow = true;
+
+      room.add(roomInstance, light);
+      room.position.set(posX, posY, posZ);
+      room.visible = visible;
+
+      this.rooms.push(room);
+
+      this.scene.add(room);
     },
 
-    createSymbol: function () {
+    cameraReveal: function () {
+      gsap.fromTo(
+        this.camera.position,
+        {
+          x: 5,
+          y: -2,
+          z: 0,
+        },
+        {
+          x: 30.011,
+          y: 9.746,
+          z: 6.955,
+          duration: 3,
+          ease: "sine.inOut",
+        }
+      );
+      gsap.fromTo(
+        this.camera.rotation,
+        {
+          x: 1.5707963267948954,
+          y: 1.1902899496825314,
+          z: -1.5707963267948954,
+        },
+        {
+          x: -0.9509,
+          y: 1.1911,
+          z: 0.9156,
+          duration: 3,
+          ease: "sine.inOut",
+        }
+      );
+      setTimeout(this.controls.update(), 3);
+    },
+
+    createSymbol: function (direction) {
+      let icon, pointingIcon, x, y;
+
       const material = new THREE.MeshStandardMaterial({
         color: 0xf7d4e1,
         emissive: 0xf7d4e1,
@@ -142,139 +265,140 @@ export default {
         metalness: 0.3,
       });
 
-      /*
-      const material = this.loadTextures(
-        "./assets/materials/glass-frosted/Glass_Frosted_001_basecolor.jpg",
-        "./assets/materials/glass-frosted/Glass_Frosted_001_normal.jpg",
-        "./assets/materials/glass-frosted/Glass_Frosted_001_height.png",
-        "./assets/materials/glass-frosted/Glass_Frosted_001_roughness.jpg",
-        "./assets/materials/glass-frosted/Glass_Frosted_001_ambientOcclusion.jpg",
-        "",
-        0.1,
-        0.2,
-        "",
-        0xdb3774,
-        1
-      );  
-      */
+      switch (true) {
+        case direction === "up":
+          icon = "☝";
+          x = -3;
+          y = -14;
+          break;
+        case direction === "left":
+          icon = "☜";
+          x = -4.3;
+          y = -13;
+          break;
+        case direction === "down":
+          icon = "☟";
+          x = -3;
+          y = -14;
+          break;
+        case direction === "right":
+          icon = "☞";
+          x = -4.5;
+          y = -13;
+          break;
+      }
 
-      this.fontLoader.load(
+      return this.fontLoader.load(
         "./assets/fonts/Noto Sans Symbols 2_Regular.json",
         (font) => {
-          const textGeometry = new TextGeometry("☜", {
+          const textGeometry = new TextGeometry(icon, {
             font: font,
-            size: 10,
+            size: 5,
             height: 0.2,
-            curveSegments: 20,
+            curveSegments: 5,
             bevelEnabled: true,
             bevelThickness: 0.1,
             bevelSize: 0.1,
             bevelOffset: -0.05,
-            bevelSegments: 10,
+            bevelSegments: 5,
           });
 
           textGeometry.computeBoundingBox();
 
-          this.pointingIcon = new THREE.Mesh(textGeometry, material);
-          this.pointingIcon.position.set(0, 10, 0);
-          this.signModel.add(this.pointingIcon);
+          pointingIcon = new THREE.Mesh(textGeometry, material);
+          pointingIcon.position.set(x, y, 0);
+
+          const currentSign = this.signModels[this.signIndexSymbols];
+          currentSign.add(pointingIcon);
+          this.signIndexSymbols += 1;
         }
       );
     },
 
-    createText: function () {
+    createText: function (text) {
       const material = new THREE.MeshStandardMaterial({
         color: 0xf7d4e1,
         emissive: 0xf7d4e1,
         emissiveIntensity: 1,
         metalness: 0.3,
       });
+      let signText;
 
-      /*
-      const material = this.loadTextures(
-        "./assets/materials/glass-frosted/Glass_Frosted_001_basecolor.jpg",
-        "./assets/materials/glass-frosted/Glass_Frosted_001_normal.jpg",
-        "./assets/materials/glass-frosted/Glass_Frosted_001_height.png",
-        "./assets/materials/glass-frosted/Glass_Frosted_001_roughness.jpg",
-        "./assets/materials/glass-frosted/Glass_Frosted_001_ambientOcclusion.jpg",
-        "",
-        0.1,
-        0.2,
-        "",
-        0xdb3774,
-        1
-      );  
-      */
-
-      this.fontLoader.load("./assets/fonts/Arimo_Bold.json", (font) => {
-        const textGeometry = new TextGeometry("Project 1", {
+      this.fontLoader.load("./assets/fonts/Arimo_Bold.json", async (font) => {
+        const textGeometry = new TextGeometry(text, {
           font: font,
           size: 1,
           height: 0.2,
-          curveSegments: 20,
+          curveSegments: 8,
           bevelEnabled: true,
           bevelThickness: 0.1,
           bevelSize: 0.1,
-          bevelOffset: -0.05,
-          bevelSegments: 10,
+          bevelOffset: -0.07,
+          bevelSegments: 8,
         });
 
         textGeometry.computeBoundingBox();
 
-        this.signText = new THREE.Mesh(textGeometry, material);
-        this.signText.position.set(-2.8, -0.4, 0);
-        this.signModel.add(this.signText);
+        signText = new THREE.Mesh(textGeometry, material);
+        signText.position.set(-4, -0.4, 0);
+        const currentSign = this.signModels[this.signIndexTexts];
+        currentSign.add(signText);
+        this.signIndexTexts += 1;
       });
     },
 
-    addSign: function () {
+    addSign: function (direction, text) {
+      //let signIcon;
+
+      const signModel = new THREE.Group();
       const signFrame = new THREE.Group();
       const material = new THREE.MeshStandardMaterial({ color: 0xf2b67c });
       const part1 = new THREE.Mesh(
-        new THREE.BoxGeometry(0.5, 4, 0.5),
+        new THREE.BoxGeometry(0.5, 6, 0.5),
         material
       );
-      part1.position.set(-3.5, 0);
+      part1.position.set(-5.5, 0);
 
       const part2 = new THREE.Mesh(
-        new THREE.BoxGeometry(7, 0.5, 0.5),
+        new THREE.BoxGeometry(10.5, 0.5, 0.5),
         material
       );
-      part2.position.set(0, -1.75);
+      part2.position.set(0, -2.75);
 
       const part3 = new THREE.Mesh(
-        new THREE.BoxGeometry(0.5, 4, 0.5),
+        new THREE.BoxGeometry(0.5, 6, 0.5),
         material
       );
-      part3.position.set(3.5, 0);
+      part3.position.set(5.5, 0);
 
       const part4 = new THREE.Mesh(
-        new THREE.BoxGeometry(7, 0.5, 0.5),
+        new THREE.BoxGeometry(10.5, 0.5, 0.5),
         material
       );
-      part4.position.set(0, 1.75);
+      part4.position.set(0, 2.75);
 
       signFrame.add(part1, part2, part3, part4);
 
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(7, 3), material);
+      const sign = new THREE.Mesh(new THREE.PlaneGeometry(11, 5), material);
 
-      this.signModel = new THREE.Group();
-      this.signModel.add(signFrame, sign);
-      this.signModel.position.set(-39.95, -18, -20);
-      this.signModel.rotation.set(0, THREE.MathUtils.degToRad(90), 0);
-      this.scene.add(this.signModel);
+      this.createSymbol(direction);
+      this.createText(text);
+
+      signModel.add(signFrame, sign);
+
+      return signModel;
     },
 
-    addDoor: function () {
+    constructDoor: function () {
       const doorFrameShape = new THREE.Shape();
       doorFrameShape.moveTo(0, 0);
       doorFrameShape.lineTo(1, 0);
-      doorFrameShape.lineTo(1, 11);
-      doorFrameShape.lineTo(7, 11);
-      doorFrameShape.lineTo(7, 0);
-      doorFrameShape.lineTo(8, 0);
-      doorFrameShape.lineTo(8, 12);
-      doorFrameShape.lineTo(0, 12);
+      doorFrameShape.lineTo(1, 20);
+      doorFrameShape.lineTo(12, 20);
+      doorFrameShape.lineTo(12, 0);
+      doorFrameShape.lineTo(13, 0);
+      doorFrameShape.lineTo(13, 21);
+      doorFrameShape.lineTo(0, 21);
       doorFrameShape.lineTo(0, 0);
 
       const extrudeSettings = {
@@ -284,7 +408,7 @@ export default {
         steps: 1,
         bevelSize: 0,
 
-        bevelThickness: 1,
+        bevelThickness: 0.5,
       };
 
       const doorFrameGeometry = new THREE.ExtrudeGeometry(
@@ -296,17 +420,17 @@ export default {
         color: 0xdb3774,
       });
       const doorFrame = new THREE.Mesh(doorFrameGeometry, doorFrameMaterial);
-      doorFrame.position.set(-4, -5.5, -1.3);
+      doorFrame.position.set(-6, -5.5, -1.3);
 
-      const doorGeometry = new THREE.PlaneGeometry(6, 11, 2, 2);
+      const doorGeometry = new THREE.BoxGeometry(12, 20, 1);
       const doorMaterial = new THREE.MeshStandardMaterial({
         color: 0xf2b67c,
         side: THREE.DoubleSide,
       });
       const door = new THREE.Mesh(doorGeometry, doorMaterial);
-      door.position.setZ(-0.2);
+      door.position.set(0, 5, -1);
 
-      const doorKnobGeometry = new THREE.SphereGeometry(0.25, 10, 10);
+      const doorKnobGeometry = new THREE.SphereGeometry(0.5, 10, 10);
       const doorKnobMaterial = new THREE.MeshStandardMaterial({
         color: 0x8fe1f2,
         side: THREE.DoubleSide,
@@ -314,17 +438,117 @@ export default {
 
       const doorKnobOne = new THREE.Mesh(doorKnobGeometry, doorKnobMaterial);
 
-      doorKnobOne.position.set(2, -1, 0.2);
+      doorKnobOne.position.set(4, 4, -0.5);
 
       const doorModel = new THREE.Group();
       doorModel.add(doorFrame, door, doorKnobOne);
+      return doorModel;
+    },
 
-      doorModel.position.set(-39, -19.6, -30);
-      doorModel.rotation.set(0, THREE.MathUtils.degToRad(90), 0);
+    addDoorModels: function (width, height, depth, posX, posY, posZ, options) {
+      const doors = options.doors;
 
-      this.scene.add(doorModel);
+      for (const i of doors) {
+        if (typeof i === "object") {
+          switch (true) {
+            case i.direction === "up":
+              {
+                const doorModel = this.constructDoor();
+                doorModel.position.set(
+                  posX,
+                  -(height / 2) + 5 + posY,
+                  -(depth / 2) + 1 + posZ
+                );
+                doorModel.rotation.set(0, THREE.MathUtils.degToRad(0), 0);
 
-      //const doorFrame =
+                const signModel = this.addSign(i.direction, i.sign);
+
+                signModel.position.set(
+                  posX + 0.5,
+                  -(height / 2) + 25 + posY,
+                  -(depth / 2) + 0.3 + posZ
+                );
+                signModel.rotation.set(0, THREE.MathUtils.degToRad(0), 0);
+
+                this.signModels.push(signModel);
+
+                this.scene.add(doorModel, signModel);
+              }
+              break;
+            case i.direction === "right":
+              {
+                const doorModel = this.constructDoor(i.direction, i.sign);
+                doorModel.position.set(
+                  width / 2 - 1 + posX,
+                  -(height / 2) + 5 + posY,
+                  posZ - 0.3
+                );
+                doorModel.rotation.set(0, THREE.MathUtils.degToRad(270), 0);
+
+                const signModel = this.addSign(i.direction, i.sign);
+                signModel.position.set(
+                  width / 2 - 0.3 + posX,
+                  -(height / 2) + 25 + posY,
+                  posZ + 0.3
+                );
+                signModel.rotation.set(0, THREE.MathUtils.degToRad(270), 0);
+
+                this.signModels.push(signModel);
+
+                this.scene.add(doorModel, signModel);
+              }
+              break;
+            case i.direction === "down":
+              {
+                const doorModel = this.constructDoor(i.direction, i.sign);
+                doorModel.position.set(
+                  posX,
+                  -(height / 2) + 5 + posY,
+                  depth / 2 - 1 + posZ
+                );
+                doorModel.rotation.set(0, THREE.MathUtils.degToRad(180), 0);
+
+                const signModel = this.addSign(i.direction, i.sign);
+                signModel.position.set(
+                  posX - 0.5,
+                  -(height / 2) + 25 + posY,
+                  depth / 2 - 0.3 + posZ
+                );
+                signModel.rotation.set(0, THREE.MathUtils.degToRad(180), 0);
+
+                this.signModels.push(signModel);
+
+                this.scene.add(doorModel, signModel);
+              }
+              break;
+            case i.direction === "left":
+              {
+                const doorModel = this.constructDoor(i.direction, i.sign);
+                doorModel.position.set(
+                  -(width / 2) + 1 + posX,
+                  -(height / 2) + 5 + posY,
+                  posZ
+                );
+                doorModel.rotation.set(0, THREE.MathUtils.degToRad(90), 0);
+
+                const signModel = this.addSign(i.direction, i.sign);
+                signModel.position.set(
+                  -(width / 2) + 0.3 + posX,
+                  -(height / 2) + 25 + posY,
+                  posZ - 0.5
+                );
+                signModel.rotation.set(0, THREE.MathUtils.degToRad(90), 0);
+
+                this.signModels.push(signModel);
+
+                this.scene.add(doorModel, signModel);
+              }
+              break;
+            default:
+              break;
+          }
+        }
+      }
     },
 
     addTorus: function () {
@@ -625,7 +849,10 @@ export default {
       this.torus.rotation.y += 0.002;
       this.torus.rotation.z += 0.0004;
       */
-
+      this.cameraPosition.x = this.camera.position.x;
+      this.cameraPosition.y = this.camera.position.y;
+      this.cameraPosition.z = this.camera.position.z;
+      this.cameraPosition.rotation = this.camera.rotation;
       //this.renderSceneInfo(this.canvasHand);
       addEventListener("keydown", (event) => {
         if (this.videoCubeVisible) {

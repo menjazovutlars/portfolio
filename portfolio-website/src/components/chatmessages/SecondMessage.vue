@@ -22,6 +22,7 @@ export default {
         this.$root.$refs.TextBox.thirdMessage,
         "mdi-video"
       );
+      this.$root.$refs.CanvasBG.cameraReveal();
     },
   },
 };

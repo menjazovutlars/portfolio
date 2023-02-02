@@ -7,6 +7,7 @@ import VueWorker from "vue-worker";
 import { fp } from "./plugins/fingerpose";
 import handpose from "@tensorflow-models/handpose";
 import * as THREE from "three";
+import gsap from "gsap";
 const createjs = window.createjs;
 
 Vue.config.productionTip = false;
@@ -20,5 +21,6 @@ new Vue({
   fp,
   handpose,
   THREE,
+  gsap,
   render: (h) => h(App),
 }).$mount("#app");

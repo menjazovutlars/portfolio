@@ -20,6 +20,7 @@
     "core-js": "^3.8.3",
     "createjs": "^1.0.1",
     "fingerpose": "^0.1.0",
+    "gsap": "^3.11.4",
     "three": "^0.149.0",
     "vue": "^2.6.14",
     "vue-media-recorder": "^0.1.25",
