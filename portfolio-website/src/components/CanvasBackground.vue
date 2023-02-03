@@ -278,53 +278,125 @@ export default {
 
         if (intersects.length > 0 && intersects[0].object.userData.clickable) {
           this.clickable = intersects[0].object;
+          console.log(this.clickable.position);
           console.log(
             "found clickable ",
             this.clickable.userData.name,
             " ",
             this.clickable.userData.direction,
             " ",
-            this.clickable.userData.sign
+            this.clickable.userData.sign,
+            " ",
+            this.clickable
           );
           console.log(this.currentRoom.userData.name);
 
+          let offset = {
+            x: -10,
+            y: 9.5,
+            z: 0.4,
+          };
+
           switch (true) {
             case this.clickable.userData.sign === "Center":
+              switch (true) {
+                case this.clickable.userData.direction === "down":
+                  offset = {
+                    x: 0.1973,
+                    y: 5.5323,
+                    z: -38.092,
+                  };
+                  break;
+
+                case this.clickable.userData.direction === "right":
+                  offset = {
+                    x: -38.9981,
+                    y: 8.5884,
+                    z: -0.1939,
+                  };
+                  break;
+                case this.clickable.userData.direction === "up":
+                  offset = {
+                    x: 0.0816,
+                    y: 5.9039,
+                    z: 38.0365,
+                  };
+                  break;
+                case this.clickable.userData.direction === "left":
+                  offset = {
+                    x: 38.6803,
+                    y: 10.1896,
+                    z: -0.0668,
+                  };
+                  break;
+              }
+
               this.moveToRoom(
                 this.scene.getObjectByName(this.clickable.userData.sign)
                   .position,
+                offset,
                 this.clickable.userData.sign
               );
               console.log("moving to Center");
               break;
             case this.clickable.userData.sign === "Project 1":
+              switch (true) {
+                case this.clickable.userData.direction === "up":
+                  offset = {
+                    x: 0.0116,
+                    y: 5.6171,
+                    z: -62.3963,
+                  };
+                  break;
+              }
+
               this.moveToRoom(
                 this.scene.getObjectByName(this.clickable.userData.sign)
                   .position,
+                offset,
                 this.clickable.userData.sign
               );
               console.log("moving to Project 1");
               break;
             case this.clickable.userData.sign === "Project 2":
+              offset = {
+                x: 43.4376,
+                y: 10.6262,
+                z: 0.1676,
+              };
+
               this.moveToRoom(
                 this.scene.getObjectByName(this.clickable.userData.sign)
                   .position,
+                offset,
                 this.clickable.userData.sign
               );
               console.log("moving to Project 2");
               break;
             case this.clickable.userData.sign === "Project 3":
+              offset = {
+                x: -0.59716,
+                y: 6.2247,
+                z: 62.4918,
+              };
               this.moveToRoom(
                 this.scene.getObjectByName(this.clickable.userData.sign)
                   .position,
+                offset,
                 this.clickable.userData.sign
               );
               console.log("moving to Project 3");
               break;
             case this.clickable.userData.sign === "Project 4":
+              offset = {
+                x: -43.4376,
+                y: 10.6262,
+                z: -0.1676,
+              };
               this.moveToRoom(
                 this.scene.getObjectByName(this.clickable.userData.sign)
                   .position,
+                offset,
                 this.clickable.userData.sign
               );
               console.log("moving to Project 4");
@@ -335,8 +407,15 @@ export default {
         }
       });
     },
-    moveToRoom: function (coordinates, room) {
-      console.log(room);
+    moveToRoom: function (coordinates, offset, room) {
+      console.log("offset", offset);
+
+      console.log("coordinates", coordinates);
+
+      const duration = 2;
+      const delay = 2;
+      const y = -20;
+
       gsap.fromTo(
         this.camera.position,
         {
@@ -345,11 +424,28 @@ export default {
           z: this.camera.position.z,
         },
         {
-          x: coordinates.x - 10,
-          y: coordinates.y,
-          z: coordinates.z,
-          duration: 3,
-          ease: "sine.inOut",
+          x: offset.x / 2,
+          y: y,
+          z: offset.z / 2,
+          duration: duration,
+          ease: "sine.out",
+        }
+      );
+
+      gsap.fromTo(
+        this.camera.position,
+        {
+          x: offset.x / 2,
+          y: y,
+          z: offset.z / 2,
+        },
+        {
+          x: offset.x,
+          y: offset.y,
+          z: offset.z,
+          delay: delay,
+          duration: duration,
+          ease: "sine.in",
         }
       );
 
@@ -360,6 +456,8 @@ export default {
       };
 
       console.log(rotation);
+
+      /*
 
       gsap.fromTo(
         this.camera.rotation,
@@ -372,10 +470,12 @@ export default {
           x: rotation.x,
           y: rotation.y,
           z: rotation.z,
-          duration: 3,
-          ease: "sine.inOut",
+          duration: 4,
+          ease: easing,
         }
       );
+      
+      
 
       gsap.fromTo(
         this.controls.target,
@@ -388,10 +488,45 @@ export default {
           x: coordinates.x,
           y: coordinates.y,
           z: coordinates.z,
-          duration: 3,
-          ease: "sine.inOut",
+          duration: 4,
+          ease: easing,
         }
       );
+ */
+
+      gsap.fromTo(
+        this.controls.target,
+        {
+          x: this.controls.target.x,
+          y: this.controls.target.y,
+          z: this.controls.target.z,
+        },
+        {
+          x: offset.x / 2,
+          y: y,
+          z: offset.z / 2,
+          duration: duration,
+          ease: "sine.out",
+        }
+      );
+
+      gsap.fromTo(
+        this.controls.target,
+        {
+          x: offset.x / 2,
+          y: y,
+          z: offset.z / 2,
+        },
+        {
+          x: coordinates.x,
+          y: coordinates.y,
+          z: coordinates.z,
+          delay: delay,
+          duration: duration,
+          ease: "sine.in",
+        }
+      );
+
       console.log(this.currentRoom.userData.name);
 
       this.controls.enabled = false;
@@ -414,7 +549,7 @@ export default {
         this.currentRoom.visible = false;
         this.currentRoom = this.scene.getObjectByName(room);
         this.currentRoom.visible = true;
-      }, 3000);
+      }, 4000);
     },
     addRoom: function (
       room,
@@ -683,7 +818,7 @@ export default {
       door.receiveShadow = true;
       door.castShadow = true;
       door.userData.clickable = true;
-      door.userData.name = "DOOR";
+      door.userData.name = "DOORMODEL";
       door.userData.direction = direction;
       door.userData.sign = sign;
       door.position.set(0, 5, -1);
