@@ -8,6 +8,7 @@
       <p>rotX:{{ cameraPosition.rotation.x }}</p>
       <p>rotY:{{ cameraPosition.rotation.y }}</p>
       <p>rotZ:{{ cameraPosition.rotation.z }}</p>
+      <p>zoom:{{ cameraPosition.zoom }}</p>
     </span>
   </v-container>
 </template>
@@ -53,13 +54,23 @@ export default {
       textureLoader: "",
       videoCubeVisible: "",
       videoCube: "",
+      roomCenter: "",
+      roomUp: "",
+      roomRight: "",
+      roomDown: "",
+      roomLeft: "",
       rooms: [],
+      currentRoom: "",
       fontLoader: "",
       signText: "",
       pointingIcon: "",
       signModels: [],
       signIndexTexts: 0,
       signIndexSymbols: 0,
+      raycaster: "",
+      clickMouse: "",
+      moveMouse: "",
+      clickable: THREE.Object3D,
     };
   },
   created() {
@@ -99,6 +110,14 @@ export default {
       this.controls.zoomSpeed = 5;
       this.controls.enabled = true;
 
+      this.controls.enableZoom = true;
+      this.controls.enablePan = false;
+      this.controls.maxDistance = 40;
+
+      this.raycaster = new THREE.Raycaster();
+      this.clickMouse = new THREE.Vector2();
+      this.MoveMouse = new THREE.Vector2();
+
       /*
 
       this.ambientLight = new THREE.AmbientLight(0x404040);
@@ -120,67 +139,286 @@ export default {
       //this.createText();
       //this.createSymbol();
 
-      this.addRoom(this.roomCenter, true, 80, 80, 100, 0x8fe1f2, 0, 0, 0, {
-        doors: [
-          {
-            direction: "up",
-            sign: "456666666 1",
-          },
-          {
-            direction: "right",
-            sign: "Project 2",
-          },
-          {
-            direction: "down",
-            sign: "Project 3",
-          },
-          {
-            direction: "left",
-            sign: "Project 4",
-          },
-        ],
-      });
+      this.addRoom(
+        this.roomCenter,
+        "Center",
+        true,
+        80,
+        80,
+        100,
+        0x8fe1f2,
+        0,
+        0,
+        0,
+        {
+          doors: [
+            {
+              direction: "up",
+              sign: "Project 1",
+            },
+            {
+              direction: "right",
+              sign: "Project 2",
+            },
+            {
+              direction: "down",
+              sign: "Project 3",
+            },
+            {
+              direction: "left",
+              sign: "Project 4",
+            },
+          ],
+        }
+      );
 
-      this.addRoom(this.roomCenter, false, 80, 80, 100, 0xf2b67c, 0, 0, -101, {
-        doors: [
-          {
-            direction: "up",
-            sign: "Project 1",
-          },
-          {
-            direction: "right",
-            sign: "sfaasfasfasfasfsafsaf",
-          },
-          {
-            direction: "down",
-            sign: "Project 3",
-          },
-          {
-            direction: "left",
-            sign: "Project 4",
-          },
-        ],
-      });
+      this.addRoom(
+        this.roomUp,
+        "Project 1",
+        false,
+        80,
+        80,
+        100,
+        0xf2b67c,
+        0,
+        0,
+        -102,
+        {
+          doors: [
+            {
+              direction: "down",
+              sign: "Center",
+            },
+          ],
+        }
+      );
 
-      /*
-      this.addRoom(this.roomUp, 80, 50, 100, 0x8fe1f2, 0, 0, -100.5, 0);
-      this.addRoom(this.roomRight, 80, 50, 100, 0x8fe1f2, 80.5, 0, 0, 0);
-      this.addRoom(this.roomDown, 80, 50, 100, 0x8fe1f2, 0, 0, 100.5, 0);
-      this.addRoom(this.roomLeft, 80, 50, 100, 0x8fe1f2, -80.5, 0, 0, 0);
-      */
+      this.addRoom(
+        this.roomUp,
+        "Project 2",
+        false,
+        80,
+        80,
+        100,
+        0x8fe1f2,
+        82,
+        0,
+        0,
+        {
+          doors: [
+            {
+              direction: "left",
+              sign: "Center",
+            },
+          ],
+        }
+      );
+
+      this.addRoom(
+        this.roomUp,
+        "Project 3",
+        false,
+        80,
+        80,
+        100,
+        0x8fe1f2,
+        0,
+        0,
+        102,
+        {
+          doors: [
+            {
+              direction: "up",
+              sign: "Center",
+            },
+          ],
+        }
+      );
+
+      this.addRoom(
+        this.roomUp,
+        "Project 4",
+        false,
+        80,
+        80,
+        100,
+        0x8fe1f2,
+        -82,
+        0,
+        0,
+        {
+          doors: [
+            {
+              direction: "right",
+              sign: "Center",
+            },
+          ],
+        }
+      );
 
       //this.addDoor();
 
       //this.addSign();
+      this.currentRoom = this.rooms[0];
 
       this.renderer.render(this.scene, this.camera);
-      console.log(this.rooms);
       console.log(this.rooms[1].position);
 
-      //this.addTorus();
+      window.addEventListener("click", (e) => {
+        if (this.clickable) {
+          this.clickable = null;
+          return;
+        }
+
+        this.clickMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        this.clickMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        this.raycaster.setFromCamera(this.clickMouse, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.scene.children);
+
+        if (intersects.length > 0 && intersects[0].object.userData.clickable) {
+          this.clickable = intersects[0].object;
+          console.log(
+            "found clickable ",
+            this.clickable.userData.name,
+            " ",
+            this.clickable.userData.direction,
+            " ",
+            this.clickable.userData.sign
+          );
+          console.log(this.currentRoom.userData.name);
+
+          switch (true) {
+            case this.clickable.userData.sign === "Center":
+              this.moveToRoom(
+                this.scene.getObjectByName(this.clickable.userData.sign)
+                  .position,
+                this.clickable.userData.sign
+              );
+              console.log("moving to Center");
+              break;
+            case this.clickable.userData.sign === "Project 1":
+              this.moveToRoom(
+                this.scene.getObjectByName(this.clickable.userData.sign)
+                  .position,
+                this.clickable.userData.sign
+              );
+              console.log("moving to Project 1");
+              break;
+            case this.clickable.userData.sign === "Project 2":
+              this.moveToRoom(
+                this.scene.getObjectByName(this.clickable.userData.sign)
+                  .position,
+                this.clickable.userData.sign
+              );
+              console.log("moving to Project 2");
+              break;
+            case this.clickable.userData.sign === "Project 3":
+              this.moveToRoom(
+                this.scene.getObjectByName(this.clickable.userData.sign)
+                  .position,
+                this.clickable.userData.sign
+              );
+              console.log("moving to Project 3");
+              break;
+            case this.clickable.userData.sign === "Project 4":
+              this.moveToRoom(
+                this.scene.getObjectByName(this.clickable.userData.sign)
+                  .position,
+                this.clickable.userData.sign
+              );
+              console.log("moving to Project 4");
+              break;
+            default:
+              break;
+          }
+        }
+      });
+    },
+    moveToRoom: function (coordinates, room) {
+      console.log(room);
+      gsap.fromTo(
+        this.camera.position,
+        {
+          x: this.camera.position.x,
+          y: this.camera.position.y,
+          z: this.camera.position.z,
+        },
+        {
+          x: coordinates.x - 10,
+          y: coordinates.y,
+          z: coordinates.z,
+          duration: 3,
+          ease: "sine.inOut",
+        }
+      );
+
+      const rotation = {
+        x: this.camera.rotation.x,
+        y: this.camera.rotation.y,
+        z: this.camera.rotation.z,
+      };
+
+      console.log(rotation);
+
+      gsap.fromTo(
+        this.camera.rotation,
+        {
+          x: this.camera.rotation.x,
+          y: this.camera.rotation.y,
+          z: this.camera.rotation.z,
+        },
+        {
+          x: rotation.x,
+          y: rotation.y,
+          z: rotation.z,
+          duration: 3,
+          ease: "sine.inOut",
+        }
+      );
+
+      gsap.fromTo(
+        this.controls.target,
+        {
+          x: this.controls.target.x,
+          y: this.controls.target.y,
+          z: this.controls.target.z,
+        },
+        {
+          x: coordinates.x,
+          y: coordinates.y,
+          z: coordinates.z,
+          duration: 3,
+          ease: "sine.inOut",
+        }
+      );
+      console.log(this.currentRoom.userData.name);
+
+      this.controls.enabled = false;
+      for (const r of this.rooms) {
+        if (
+          r.userData.name === this.currentRoom.userData.name ||
+          r.userData.name === room
+        ) {
+          r.visible = true;
+          console.log(r.userData.name, "   ", this.currentRoom.userData.name);
+        } else {
+          r.visible = false;
+        }
+      }
+
+      setTimeout(() => {
+        this.controls.enabled = true;
+        this.controls.target.set(coordinates.x, coordinates.y, coordinates.z);
+        this.camera.updateProjectionMatrix();
+        this.currentRoom.visible = false;
+        this.currentRoom = this.scene.getObjectByName(room);
+        this.currentRoom.visible = true;
+      }, 3000);
     },
     addRoom: function (
       room,
+      name,
       visible,
       width,
       height,
@@ -200,6 +438,7 @@ export default {
       room = new THREE.Group();
 
       const roomInstance = new THREE.Mesh(geometry, material);
+      roomInstance.name = "Room";
 
       //this.roomUp.castShadow = true;
 
@@ -210,14 +449,20 @@ export default {
 
       const light = new THREE.PointLight(0xffffff, 1, 300, 1);
       light.position.set(0, 35, 0);
-      light.castShadow = true;
+      light.castShadow = false;
+      light.shadow.mapSize.width = 512; // default
+      light.shadow.mapSize.height = 512; // default
+      light.shadow.camera.near = 0.5; // default
+      light.shadow.camera.far = 500; // default
 
       room.add(roomInstance, light);
       room.position.set(posX, posY, posZ);
       room.visible = visible;
+      room.name = name;
+      room.userData.isRoom = true;
+      room.userData.name = name;
 
       this.rooms.push(room);
-
       this.scene.add(room);
     },
 
@@ -252,7 +497,12 @@ export default {
           ease: "sine.inOut",
         }
       );
-      setTimeout(this.controls.update(), 3);
+      setTimeout(() => {
+        this.controls.update();
+        this.camera.updateProjectionMatrix();
+      }, 3);
+      console.log(this.rooms);
+      console.log(this.camera);
     },
 
     createSymbol: function (direction) {
@@ -389,7 +639,7 @@ export default {
       return signModel;
     },
 
-    constructDoor: function () {
+    constructDoor: function (direction, sign) {
       const doorFrameShape = new THREE.Shape();
       doorFrameShape.moveTo(0, 0);
       doorFrameShape.lineTo(1, 0);
@@ -420,6 +670,8 @@ export default {
         color: 0xdb3774,
       });
       const doorFrame = new THREE.Mesh(doorFrameGeometry, doorFrameMaterial);
+      doorFrame.receiveShadow = true;
+      doorFrame.castShadow = true;
       doorFrame.position.set(-6, -5.5, -1.3);
 
       const doorGeometry = new THREE.BoxGeometry(12, 20, 1);
@@ -428,6 +680,12 @@ export default {
         side: THREE.DoubleSide,
       });
       const door = new THREE.Mesh(doorGeometry, doorMaterial);
+      door.receiveShadow = true;
+      door.castShadow = true;
+      door.userData.clickable = true;
+      door.userData.name = "DOOR";
+      door.userData.direction = direction;
+      door.userData.sign = sign;
       door.position.set(0, 5, -1);
 
       const doorKnobGeometry = new THREE.SphereGeometry(0.5, 10, 10);
@@ -437,11 +695,14 @@ export default {
       });
 
       const doorKnobOne = new THREE.Mesh(doorKnobGeometry, doorKnobMaterial);
+      doorKnobOne.receiveShadow = true;
+      doorKnobOne.castShadow = true;
 
       doorKnobOne.position.set(4, 4, -0.5);
 
       const doorModel = new THREE.Group();
       doorModel.add(doorFrame, door, doorKnobOne);
+      doorModel.name = "DoorModel";
       return doorModel;
     },
 
@@ -453,7 +714,7 @@ export default {
           switch (true) {
             case i.direction === "up":
               {
-                const doorModel = this.constructDoor();
+                const doorModel = this.constructDoor(i.direction, i.sign);
                 doorModel.position.set(
                   posX,
                   -(height / 2) + 5 + posY,
@@ -853,6 +1114,7 @@ export default {
       this.cameraPosition.y = this.camera.position.y;
       this.cameraPosition.z = this.camera.position.z;
       this.cameraPosition.rotation = this.camera.rotation;
+      this.cameraPosition.zoom = this.camera.zoom;
       //this.renderSceneInfo(this.canvasHand);
       addEventListener("keydown", (event) => {
         if (this.videoCubeVisible) {
@@ -860,6 +1122,7 @@ export default {
         }
       });
 
+      this.controls.update();
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this.animate);
     },

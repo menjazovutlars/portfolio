@@ -23,6 +23,8 @@ export default {
         "mdi-video"
       );
       this.$root.$refs.CanvasBG.cameraReveal();
+      this.$root.$refs.PPCenter.topRow = true;
+      this.$root.$refs.PPCenter.centerRow = false;
     },
   },
 };

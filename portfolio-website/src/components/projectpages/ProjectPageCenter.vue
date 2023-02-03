@@ -1,6 +1,9 @@
 <template>
   <v-container fill-height fluid d-flex justify center>
-    <v-row align="center" justify="center" class="in-front">
+    <v-row
+      justify="center"
+      :class="[inFront, centerRow ? 'center-row' : '', topRow ? 'top-row' : '']"
+    >
       <v-col :class="[colsTextBox.col6 ? 'col-6' : 'col-4']">
         <component v-bind:is="compTextBox"></component>
       </v-col>
@@ -37,7 +40,13 @@ export default {
       colsTextBox: {
         col6: true,
       },
+      centerRow: true,
+      topRow: false,
+      inFront: "in-front",
     };
+  },
+  created() {
+    this.$root.$refs.PPCenter = this;
   },
 };
 </script>
@@ -45,5 +54,24 @@ export default {
 <style lang="scss" scoped>
 .in-front {
   z-index: 1000;
+}
+
+.center-row {
+  align-items: center !important;
+}
+
+.top-row {
+  align-items: center !important;
+  animation: float-up ease-in-out 3s 0s 1 forwards;
+}
+
+@keyframes float-up {
+  0% {
+    margin-bottom: 0;
+  }
+
+  100% {
+    margin-bottom: 50vh;
+  }
 }
 </style>
