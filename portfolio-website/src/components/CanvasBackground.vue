@@ -68,19 +68,30 @@ export default {
       signIndexTexts: 0,
       signIndexSymbols: 0,
       raycaster: "",
-      clickMouse: "",
+      clickMouse: new THREE.Vector2(),
       moveMouse: "",
+      startPage: "",
       clickable: THREE.Object3D,
+      isMoving: false,
+      windowView: new THREE.Frustum(),
+      inView: {
+        up: false,
+        right: false,
+        down: false,
+        left: false,
+      },
     };
   },
   created() {
     this.$root.$refs.CanvasBG = this;
   },
   mounted() {
-    this.initTHREE();
     this.canvas = document.getElementById("canvas-bg");
-    // this.canvasHand = this.setupSceneHand();
+    this.startPage = this.$root.$refs.StartPage;
+    this.initTHREE();
     this.animate();
+
+    // this.canvasHand = this.setupSceneHand();
   },
   methods: {
     initTHREE: function () {
@@ -108,40 +119,30 @@ export default {
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
       this.controls.zoomSpeed = 5;
-      this.controls.enabled = true;
+      this.controls.enabled = false;
 
       this.controls.enableZoom = true;
       this.controls.enablePan = false;
       this.controls.maxDistance = 40;
 
       this.raycaster = new THREE.Raycaster();
-      this.clickMouse = new THREE.Vector2();
-      this.MoveMouse = new THREE.Vector2();
-
-      /*
-
-      this.ambientLight = new THREE.AmbientLight(0x404040);
-      this.ambientLight.intesity = 1;
-      
-      */
-
-      /*
-
-      this.pointLight = new THREE.PointLight(0xffffff);
-      this.pointLight.position.set(0, 10, 35);
-      this.pointLight.castShadow = false;
-      this.scene.add(this.pointLight);
-      */
+      this.raycaster.firstHitOnly = true;
 
       this.textureLoader = new THREE.TextureLoader();
       this.fontLoader = new FontLoader();
+
+      const pPCenter = this.startPage.pPCenter.data();
+      const pPUp = this.startPage.pPUp.data();
+      const pPRight = this.startPage.pPRight.data();
+      const pPDown = this.startPage.pPDown.data();
+      const pPLeft = this.startPage.pPLeft.data();
 
       //this.createText();
       //this.createSymbol();
 
       this.addRoom(
         this.roomCenter,
-        "Center",
+        pPCenter.room,
         true,
         80,
         80,
@@ -154,19 +155,19 @@ export default {
           doors: [
             {
               direction: "up",
-              sign: "Project 1",
+              sign: pPUp.room,
             },
             {
               direction: "right",
-              sign: "Project 2",
+              sign: pPRight.room,
             },
             {
               direction: "down",
-              sign: "Project 3",
+              sign: pPDown.room,
             },
             {
               direction: "left",
-              sign: "Project 4",
+              sign: pPLeft.room,
             },
           ],
         }
@@ -174,7 +175,7 @@ export default {
 
       this.addRoom(
         this.roomUp,
-        "Project 1",
+        pPUp.room,
         false,
         80,
         80,
@@ -187,15 +188,15 @@ export default {
           doors: [
             {
               direction: "down",
-              sign: "Center",
+              sign: pPCenter.room,
             },
           ],
         }
       );
 
       this.addRoom(
-        this.roomUp,
-        "Project 2",
+        this.roomRight,
+        pPRight.room,
         false,
         80,
         80,
@@ -208,15 +209,15 @@ export default {
           doors: [
             {
               direction: "left",
-              sign: "Center",
+              sign: pPCenter.room,
             },
           ],
         }
       );
 
       this.addRoom(
-        this.roomUp,
-        "Project 3",
+        this.roomDown,
+        pPDown.room,
         false,
         80,
         80,
@@ -229,15 +230,15 @@ export default {
           doors: [
             {
               direction: "up",
-              sign: "Center",
+              sign: pPCenter.room,
             },
           ],
         }
       );
 
       this.addRoom(
-        this.roomUp,
-        "Project 4",
+        this.roomLeft,
+        pPLeft.room,
         false,
         80,
         80,
@@ -250,7 +251,7 @@ export default {
           doors: [
             {
               direction: "right",
-              sign: "Center",
+              sign: pPCenter.room,
             },
           ],
         }
@@ -262,294 +263,290 @@ export default {
       this.currentRoom = this.rooms[0];
 
       this.renderer.render(this.scene, this.camera);
-      console.log(this.rooms[1].position);
+
+      window.addEventListener("mousemove", this.doorsInView);
 
       window.addEventListener("click", (e) => {
-        if (this.clickable) {
-          this.clickable = null;
-          return;
+        this.onDoorClick(e);
+      });
+
+      window.addEventListener("resize", this.onWindowResize);
+    },
+    onDoorClick: function (e) {
+      if (this.clickable) {
+        this.clickable = null;
+        return;
+      }
+
+      this.clickMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      this.clickMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      this.raycaster.setFromCamera(this.clickMouse, this.camera);
+      const intersects = this.raycaster.intersectObjects(this.scene.children);
+
+      if (intersects.length > 0 && intersects[0].object.userData.clickable) {
+        this.clickable = intersects[0].object;
+
+        let offset = {
+          x: -10,
+          y: 9.5,
+          z: 0.4,
+        };
+
+        switch (true) {
+          case this.clickable.userData.sign === "Center":
+            switch (true) {
+              case this.clickable.userData.direction === "down":
+                offset = {
+                  x: 0.1973,
+                  y: 5.5323,
+                  z: -38.092,
+                };
+                break;
+
+              case this.clickable.userData.direction === "right":
+                offset = {
+                  x: -38.9981,
+                  y: 8.5884,
+                  z: -0.1939,
+                };
+                break;
+              case this.clickable.userData.direction === "up":
+                offset = {
+                  x: 0.0816,
+                  y: 5.9039,
+                  z: 38.0365,
+                };
+                break;
+              case this.clickable.userData.direction === "left":
+                offset = {
+                  x: 38.6803,
+                  y: 10.1896,
+                  z: -0.0668,
+                };
+                break;
+            }
+
+            this.moveToRoom(
+              this.scene.getObjectByName(this.clickable.userData.sign).position,
+              offset,
+              this.clickable.userData.sign,
+              "ProjectPageCenter"
+            );
+
+            console.log("moving to Center");
+            break;
+          case this.clickable.userData.sign === "Project 1":
+            switch (true) {
+              case this.clickable.userData.direction === "up":
+                offset = {
+                  x: 0.0116,
+                  y: 5.6171,
+                  z: -62.3963,
+                };
+                break;
+            }
+
+            this.moveToRoom(
+              this.scene.getObjectByName(this.clickable.userData.sign).position,
+              offset,
+              this.clickable.userData.sign,
+              "ProjectPageUp"
+            );
+            console.log("moving to Project 1");
+            break;
+          case this.clickable.userData.sign === "Project 2":
+            offset = {
+              x: 43.4376,
+              y: 10.6262,
+              z: 0.1676,
+            };
+
+            this.moveToRoom(
+              this.scene.getObjectByName(this.clickable.userData.sign).position,
+              offset,
+              this.clickable.userData.sign,
+              "ProjectPageRight"
+            );
+            console.log("moving to Project 2");
+            break;
+          case this.clickable.userData.sign === "Project 3":
+            offset = {
+              x: -0.59716,
+              y: 6.2247,
+              z: 62.4918,
+            };
+            this.moveToRoom(
+              this.scene.getObjectByName(this.clickable.userData.sign).position,
+              offset,
+              this.clickable.userData.sign,
+              "ProjectPageDown"
+            );
+            console.log("moving to Project 3");
+            break;
+          case this.clickable.userData.sign === "Project 4":
+            offset = {
+              x: -43.4376,
+              y: 10.6262,
+              z: -0.1676,
+            };
+            this.moveToRoom(
+              this.scene.getObjectByName(this.clickable.userData.sign).position,
+              offset,
+              this.clickable.userData.sign,
+              "ProjectPageLeft"
+            );
+            console.log("moving to Project 4");
+            break;
+          default:
+            break;
         }
+      }
+    },
+    doorsInView: function () {
+      this.inView.up = false;
+      this.inView.right = false;
+      this.inView.down = false;
+      this.inView.left = false;
 
-        this.clickMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-        this.clickMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      this.camera.updateMatrix();
+      this.camera.updateMatrixWorld();
+      this.windowView.setFromProjectionMatrix(
+        new THREE.Matrix4().multiplyMatrices(
+          this.camera.projectionMatrix,
+          this.camera.matrixWorldInverse
+        )
+      );
+      const doors = this.scene.getObjectsByProperty("name", "Door");
 
-        this.raycaster.setFromCamera(this.clickMouse, this.camera);
-        const intersects = this.raycaster.intersectObjects(this.scene.children);
-
-        if (intersects.length > 0 && intersects[0].object.userData.clickable) {
-          this.clickable = intersects[0].object;
-          console.log(this.clickable.position);
-          console.log(
-            "found clickable ",
-            this.clickable.userData.name,
-            " ",
-            this.clickable.userData.direction,
-            " ",
-            this.clickable.userData.sign,
-            " ",
-            this.clickable
-          );
-          console.log(this.currentRoom.userData.name);
-
-          let offset = {
-            x: -10,
-            y: 9.5,
-            z: 0.4,
-          };
-
-          switch (true) {
-            case this.clickable.userData.sign === "Center":
-              switch (true) {
-                case this.clickable.userData.direction === "down":
-                  offset = {
-                    x: 0.1973,
-                    y: 5.5323,
-                    z: -38.092,
-                  };
-                  break;
-
-                case this.clickable.userData.direction === "right":
-                  offset = {
-                    x: -38.9981,
-                    y: 8.5884,
-                    z: -0.1939,
-                  };
-                  break;
-                case this.clickable.userData.direction === "up":
-                  offset = {
-                    x: 0.0816,
-                    y: 5.9039,
-                    z: 38.0365,
-                  };
-                  break;
-                case this.clickable.userData.direction === "left":
-                  offset = {
-                    x: 38.6803,
-                    y: 10.1896,
-                    z: -0.0668,
-                  };
-                  break;
-              }
-
-              this.moveToRoom(
-                this.scene.getObjectByName(this.clickable.userData.sign)
-                  .position,
-                offset,
-                this.clickable.userData.sign
-              );
-              console.log("moving to Center");
+      for (const door of doors) {
+        const intersects = this.windowView.intersectsObject(door);
+        if (intersects && door.userData.room === this.currentRoom.name) {
+          switch (door.userData.direction) {
+            case "up":
+              this.inView.up = true;
               break;
-            case this.clickable.userData.sign === "Project 1":
-              switch (true) {
-                case this.clickable.userData.direction === "up":
-                  offset = {
-                    x: 0.0116,
-                    y: 5.6171,
-                    z: -62.3963,
-                  };
-                  break;
-              }
-
-              this.moveToRoom(
-                this.scene.getObjectByName(this.clickable.userData.sign)
-                  .position,
-                offset,
-                this.clickable.userData.sign
-              );
-              console.log("moving to Project 1");
+            case "right":
+              this.inView.right = true;
               break;
-            case this.clickable.userData.sign === "Project 2":
-              offset = {
-                x: 43.4376,
-                y: 10.6262,
-                z: 0.1676,
-              };
-
-              this.moveToRoom(
-                this.scene.getObjectByName(this.clickable.userData.sign)
-                  .position,
-                offset,
-                this.clickable.userData.sign
-              );
-              console.log("moving to Project 2");
+            case "down":
+              this.inView.down = true;
               break;
-            case this.clickable.userData.sign === "Project 3":
-              offset = {
-                x: -0.59716,
-                y: 6.2247,
-                z: 62.4918,
-              };
-              this.moveToRoom(
-                this.scene.getObjectByName(this.clickable.userData.sign)
-                  .position,
-                offset,
-                this.clickable.userData.sign
-              );
-              console.log("moving to Project 3");
-              break;
-            case this.clickable.userData.sign === "Project 4":
-              offset = {
-                x: -43.4376,
-                y: 10.6262,
-                z: -0.1676,
-              };
-              this.moveToRoom(
-                this.scene.getObjectByName(this.clickable.userData.sign)
-                  .position,
-                offset,
-                this.clickable.userData.sign
-              );
-              console.log("moving to Project 4");
+            case "left":
+              this.inView.left = true;
               break;
             default:
+              this.inView.up = false;
+              this.inView.right = false;
+              this.inView.down = false;
+              this.inView.left = false;
               break;
           }
         }
-      });
-    },
-    moveToRoom: function (coordinates, offset, room) {
-      console.log("offset", offset);
-
-      console.log("coordinates", coordinates);
-
-      const duration = 2;
-      const delay = 2;
-      const y = -20;
-
-      gsap.fromTo(
-        this.camera.position,
-        {
-          x: this.camera.position.x,
-          y: this.camera.position.y,
-          z: this.camera.position.z,
-        },
-        {
-          x: offset.x / 2,
-          y: y,
-          z: offset.z / 2,
-          duration: duration,
-          ease: "sine.out",
-        }
-      );
-
-      gsap.fromTo(
-        this.camera.position,
-        {
-          x: offset.x / 2,
-          y: y,
-          z: offset.z / 2,
-        },
-        {
-          x: offset.x,
-          y: offset.y,
-          z: offset.z,
-          delay: delay,
-          duration: duration,
-          ease: "sine.in",
-        }
-      );
-
-      const rotation = {
-        x: this.camera.rotation.x,
-        y: this.camera.rotation.y,
-        z: this.camera.rotation.z,
-      };
-
-      console.log(rotation);
-
-      /*
-
-      gsap.fromTo(
-        this.camera.rotation,
-        {
-          x: this.camera.rotation.x,
-          y: this.camera.rotation.y,
-          z: this.camera.rotation.z,
-        },
-        {
-          x: rotation.x,
-          y: rotation.y,
-          z: rotation.z,
-          duration: 4,
-          ease: easing,
-        }
-      );
-      
-      
-
-      gsap.fromTo(
-        this.controls.target,
-        {
-          x: this.controls.target.x,
-          y: this.controls.target.y,
-          z: this.controls.target.z,
-        },
-        {
-          x: coordinates.x,
-          y: coordinates.y,
-          z: coordinates.z,
-          duration: 4,
-          ease: easing,
-        }
-      );
- */
-
-      gsap.fromTo(
-        this.controls.target,
-        {
-          x: this.controls.target.x,
-          y: this.controls.target.y,
-          z: this.controls.target.z,
-        },
-        {
-          x: offset.x / 2,
-          y: y,
-          z: offset.z / 2,
-          duration: duration,
-          ease: "sine.out",
-        }
-      );
-
-      gsap.fromTo(
-        this.controls.target,
-        {
-          x: offset.x / 2,
-          y: y,
-          z: offset.z / 2,
-        },
-        {
-          x: coordinates.x,
-          y: coordinates.y,
-          z: coordinates.z,
-          delay: delay,
-          duration: duration,
-          ease: "sine.in",
-        }
-      );
-
-      console.log(this.currentRoom.userData.name);
-
-      this.controls.enabled = false;
-      for (const r of this.rooms) {
-        if (
-          r.userData.name === this.currentRoom.userData.name ||
-          r.userData.name === room
-        ) {
-          r.visible = true;
-          console.log(r.userData.name, "   ", this.currentRoom.userData.name);
-        } else {
-          r.visible = false;
-        }
       }
+    },
+    moveToRoom: function (coordinates, offset, room, stage) {
+      if (this.isMoving) {
+        return;
+      } else {
+        this.startPage.stageInvisible = true;
+        this.isMoving = true;
+        const duration = 2;
+        const delay = 2;
+        const y = -20;
+        this.controls.enabled = false;
+        console.log("stage ", stage);
+        console.log("room", room);
 
-      setTimeout(() => {
-        this.controls.enabled = true;
-        this.controls.target.set(coordinates.x, coordinates.y, coordinates.z);
-        this.camera.updateProjectionMatrix();
-        this.currentRoom.visible = false;
-        this.currentRoom = this.scene.getObjectByName(room);
-        this.currentRoom.visible = true;
-      }, 4000);
+        gsap.fromTo(
+          this.camera.position,
+          {
+            x: this.camera.position.x,
+            y: this.camera.position.y,
+            z: this.camera.position.z,
+          },
+          {
+            x: offset.x / 2,
+            y: y,
+            z: offset.z / 2,
+            duration: duration,
+            ease: "sine.out",
+          }
+        );
+
+        gsap.fromTo(
+          this.camera.position,
+          {
+            x: offset.x / 2,
+            y: y,
+            z: offset.z / 2,
+          },
+          {
+            x: offset.x,
+            y: offset.y,
+            z: offset.z,
+            delay: delay,
+            duration: duration,
+            ease: "sine.in",
+          }
+        );
+
+        gsap.fromTo(
+          this.controls.target,
+          {
+            x: this.controls.target.x,
+            y: this.controls.target.y,
+            z: this.controls.target.z,
+          },
+          {
+            x: offset.x / 2,
+            y: y,
+            z: offset.z / 2,
+            duration: duration,
+            ease: "sine.out",
+          }
+        );
+
+        gsap.fromTo(
+          this.controls.target,
+          {
+            x: offset.x / 2,
+            y: y,
+            z: offset.z / 2,
+          },
+          {
+            x: coordinates.x,
+            y: coordinates.y,
+            z: coordinates.z,
+            delay: delay,
+            duration: duration,
+            ease: "sine.in",
+          }
+        );
+
+        for (const r of this.rooms) {
+          if (
+            r.userData.name === this.currentRoom.userData.name ||
+            r.userData.name === room
+          ) {
+            r.visible = true;
+          } else {
+            r.visible = false;
+          }
+        }
+
+        setTimeout(() => {
+          this.controls.enabled = true;
+          this.controls.target.set(coordinates.x, coordinates.y, coordinates.z);
+          this.currentRoom.visible = false;
+          this.currentRoom = this.scene.getObjectByName(room);
+          this.currentRoom.visible = true;
+          this.camera.updateProjectionMatrix();
+          this.startPage.stage = stage;
+          this.startPage.stageInvisible = false;
+          this.isMoving = false;
+        }, 4000);
+      }
     },
     addRoom: function (
       room,
@@ -580,7 +577,16 @@ export default {
       //room.position.set(posX, posY, posZ);
       roomInstance.receiveShadow = true;
 
-      this.addDoorModels(width, height, depth, posX, posY, posZ, doorOptions);
+      this.addDoorModels(
+        name,
+        width,
+        height,
+        depth,
+        posX,
+        posY,
+        posZ,
+        doorOptions
+      );
 
       const light = new THREE.PointLight(0xffffff, 1, 300, 1);
       light.position.set(0, 35, 0);
@@ -633,11 +639,9 @@ export default {
         }
       );
       setTimeout(() => {
-        this.controls.update();
         this.camera.updateProjectionMatrix();
-      }, 3);
-      console.log(this.rooms);
-      console.log(this.camera);
+        this.controls.enabled = true;
+      }, 3000);
     },
 
     createSymbol: function (direction) {
@@ -733,8 +737,6 @@ export default {
     },
 
     addSign: function (direction, text) {
-      //let signIcon;
-
       const signModel = new THREE.Group();
       const signFrame = new THREE.Group();
       const material = new THREE.MeshStandardMaterial({ color: 0xf2b67c });
@@ -774,7 +776,7 @@ export default {
       return signModel;
     },
 
-    constructDoor: function (direction, sign) {
+    constructDoor: function (room, direction, sign) {
       const doorFrameShape = new THREE.Shape();
       doorFrameShape.moveTo(0, 0);
       doorFrameShape.lineTo(1, 0);
@@ -818,10 +820,12 @@ export default {
       door.receiveShadow = true;
       door.castShadow = true;
       door.userData.clickable = true;
-      door.userData.name = "DOORMODEL";
+      door.userData.name = "DOOR";
       door.userData.direction = direction;
       door.userData.sign = sign;
+      door.userData.room = room;
       door.position.set(0, 5, -1);
+      door.name = "Door";
 
       const doorKnobGeometry = new THREE.SphereGeometry(0.5, 10, 10);
       const doorKnobMaterial = new THREE.MeshStandardMaterial({
@@ -841,7 +845,16 @@ export default {
       return doorModel;
     },
 
-    addDoorModels: function (width, height, depth, posX, posY, posZ, options) {
+    addDoorModels: function (
+      room,
+      width,
+      height,
+      depth,
+      posX,
+      posY,
+      posZ,
+      options
+    ) {
       const doors = options.doors;
 
       for (const i of doors) {
@@ -849,7 +862,7 @@ export default {
           switch (true) {
             case i.direction === "up":
               {
-                const doorModel = this.constructDoor(i.direction, i.sign);
+                const doorModel = this.constructDoor(room, i.direction, i.sign);
                 doorModel.position.set(
                   posX,
                   -(height / 2) + 5 + posY,
@@ -873,7 +886,7 @@ export default {
               break;
             case i.direction === "right":
               {
-                const doorModel = this.constructDoor(i.direction, i.sign);
+                const doorModel = this.constructDoor(room, i.direction, i.sign);
                 doorModel.position.set(
                   width / 2 - 1 + posX,
                   -(height / 2) + 5 + posY,
@@ -896,7 +909,7 @@ export default {
               break;
             case i.direction === "down":
               {
-                const doorModel = this.constructDoor(i.direction, i.sign);
+                const doorModel = this.constructDoor(room, i.direction, i.sign);
                 doorModel.position.set(
                   posX,
                   -(height / 2) + 5 + posY,
@@ -919,7 +932,7 @@ export default {
               break;
             case i.direction === "left":
               {
-                const doorModel = this.constructDoor(i.direction, i.sign);
+                const doorModel = this.constructDoor(room, i.direction, i.sign);
                 doorModel.position.set(
                   -(width / 2) + 1 + posX,
                   -(height / 2) + 5 + posY,
@@ -1257,9 +1270,19 @@ export default {
         }
       });
 
+      // console.log(this.currentRoom.userData.name);
+      // console.log(this.startPage.stage);
+
       this.controls.update();
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this.animate);
+    },
+
+    onWindowResize() {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
     },
   },
 };

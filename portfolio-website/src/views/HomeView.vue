@@ -32,7 +32,7 @@ export default {
 .videoBoxOffscreen {
   max-width: 640px;
   max-height: 480px;
-
+  visibility: hidden;
   transform: translate(-500px);
 }
 </style>

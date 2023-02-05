@@ -28,6 +28,7 @@ export default {
   },
   data() {
     return {
+      room: "Center",
       compTextBox: "TextBox",
       compContBox: "ContentBox",
 
@@ -46,7 +47,7 @@ export default {
     };
   },
   created() {
-    this.$root.$refs.PPCenter = this;
+    this.$root.$refs.ProjectPageCenter = this;
   },
 };
 </script>
