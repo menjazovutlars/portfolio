@@ -1,7 +1,8 @@
 <template>
   <v-container>
     <canvas id="canvas-bg"></canvas>
-    <span id="canvas-hand">
+    <MiniMap id="canvas-hand"></MiniMap>
+    <!-- <span id="canvas-hand">
       <p>x:{{ cameraPosition.x }}</p>
       <p>y:{{ cameraPosition.y }}</p>
       <p>z:{{ cameraPosition.z }}</p>
@@ -9,7 +10,7 @@
       <p>rotY:{{ cameraPosition.rotation.y }}</p>
       <p>rotZ:{{ cameraPosition.rotation.z }}</p>
       <p>zoom:{{ cameraPosition.zoom }}</p>
-    </span>
+    </span> -->
   </v-container>
 </template>
 
@@ -22,6 +23,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import gsap from "gsap";
 
+import MiniMap from "./MiniMap.vue";
+
 /*
 0xDB3774
 0xE3E8AE
@@ -33,6 +36,9 @@ import gsap from "gsap";
 
 export default {
   name: "CanvasBG",
+  components: {
+    MiniMap,
+  },
   data: function () {
     return {
       scene: "",
@@ -67,6 +73,7 @@ export default {
       signModels: [],
       signIndexTexts: 0,
       signIndexSymbols: 0,
+      miniMap: "",
       raycaster: "",
       clickMouse: new THREE.Vector2(),
       moveMouse: "",
@@ -88,6 +95,7 @@ export default {
   mounted() {
     this.canvas = document.getElementById("canvas-bg");
     this.startPage = this.$root.$refs.StartPage;
+    this.miniMap = this.$root.$refs.MiniMap;
     this.initTHREE();
     this.animate();
 
@@ -542,6 +550,7 @@ export default {
           this.currentRoom = this.scene.getObjectByName(room);
           this.currentRoom.visible = true;
           this.camera.updateProjectionMatrix();
+          this.miniMap.currentRoom = stage;
           this.startPage.stage = stage;
           this.startPage.stageInvisible = false;
           this.isMoving = false;
