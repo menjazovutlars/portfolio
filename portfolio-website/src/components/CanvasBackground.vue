@@ -121,7 +121,7 @@ export default {
 
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.shadowMap.enabled = false;
+      this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -139,18 +139,19 @@ export default {
       this.textureLoader = new THREE.TextureLoader();
       this.fontLoader = new FontLoader();
 
-      const pPCenter = this.startPage.pPCenter.data();
-      const pPUp = this.startPage.pPUp.data();
-      const pPRight = this.startPage.pPRight.data();
-      const pPDown = this.startPage.pPDown.data();
-      const pPLeft = this.startPage.pPLeft.data();
-
+      const pPCenter = this.startPage.pPCenter;
+      const pPUp = this.startPage.pPUp;
+      const pPRight = this.startPage.pPRight;
+      const pPDown = this.startPage.pPDown;
+      const pPLeft = this.startPage.pPLeft;
       //this.createText();
       //this.createSymbol();
 
+      //const fistIcon = "e769";
+
       this.addRoom(
         this.roomCenter,
-        pPCenter.room,
+        pPCenter,
         true,
         80,
         80,
@@ -163,27 +164,37 @@ export default {
           doors: [
             {
               direction: "up",
-              sign: pPUp.room,
+              sign: pPUp.data().room,
             },
             {
               direction: "right",
-              sign: pPRight.room,
+              sign: pPRight.data().room,
             },
             {
               direction: "down",
-              sign: pPDown.room,
+              sign: pPDown.data().room,
             },
             {
               direction: "left",
-              sign: pPLeft.room,
+              sign: pPLeft.data().room,
             },
           ],
+        },
+        {
+          objects: [],
         }
       );
 
+      //0xf257 = peace
+      //0xf256 = hand
+      //0xf255 = fist
+      //0xf164 = thumbsup
+      //0xf259 = spock
+      //0xf806 = middlefinger
+
       this.addRoom(
         this.roomUp,
-        pPUp.room,
+        pPUp,
         false,
         80,
         80,
@@ -196,7 +207,43 @@ export default {
           doors: [
             {
               direction: "down",
-              sign: pPCenter.room,
+              sign: pPCenter.data().room,
+            },
+          ],
+        },
+        {
+          objects: [
+            {
+              oX: 25,
+              oY: -32,
+              oZ: -38,
+              rotation: 315,
+              icon: String.fromCodePoint(0xf806),
+              linkTo: "Website",
+            },
+            {
+              oX: 29,
+              oY: -32,
+              oZ: 32,
+              rotation: 225,
+              icon: String.fromCodePoint(0xf255),
+              linkTo: "AboutTrack",
+            },
+            {
+              oX: -30,
+              oY: -32,
+              oZ: -35,
+              rotation: 30,
+              icon: String.fromCodePoint(0xf259),
+              linkTo: "TrailerTrack",
+            },
+            {
+              oX: -28,
+              oY: -32,
+              oZ: 33,
+              rotation: 330,
+              icon: String.fromCodePoint(0xf257),
+              linkTo: "RandomStuff",
             },
           ],
         }
@@ -204,7 +251,7 @@ export default {
 
       this.addRoom(
         this.roomRight,
-        pPRight.room,
+        pPRight,
         false,
         80,
         80,
@@ -217,7 +264,43 @@ export default {
           doors: [
             {
               direction: "left",
-              sign: pPCenter.room,
+              sign: pPCenter.data().room,
+            },
+          ],
+        },
+        {
+          objects: [
+            {
+              oX: 29,
+              oY: -32,
+              oZ: 32,
+              rotation: 225,
+              icon: String.fromCodePoint(0xf256),
+              linkTo: "AboutTrack",
+            },
+            {
+              oX: 25,
+              oY: -32,
+              oZ: -38,
+              rotation: 315,
+              icon: String.fromCodePoint(0xf25b),
+              linkTo: "Website",
+            },
+            {
+              oX: -30,
+              oY: -32,
+              oZ: -35,
+              rotation: 30,
+              icon: String.fromCodePoint(0xf6de),
+              linkTo: "Video",
+            },
+            {
+              oX: -28,
+              oY: -32,
+              oZ: 33,
+              rotation: 330,
+              icon: String.fromCodePoint(0xf806),
+              linkTo: "RandomStuff",
             },
           ],
         }
@@ -225,7 +308,7 @@ export default {
 
       this.addRoom(
         this.roomDown,
-        pPDown.room,
+        pPDown,
         false,
         80,
         80,
@@ -238,7 +321,43 @@ export default {
           doors: [
             {
               direction: "up",
-              sign: pPCenter.room,
+              sign: pPCenter.data().room,
+            },
+          ],
+        },
+        {
+          objects: [
+            {
+              oX: 29,
+              oY: -32,
+              oZ: 32,
+              rotation: 225,
+              icon: String.fromCodePoint(0xf256),
+              linkTo: "AboutTrack",
+            },
+            {
+              oX: 25,
+              oY: -32,
+              oZ: -38,
+              rotation: 315,
+              icon: String.fromCodePoint(0xf25b),
+              linkTo: "Website",
+            },
+            {
+              oX: -30,
+              oY: -32,
+              oZ: -35,
+              rotation: 30,
+              icon: String.fromCodePoint(0xf6de),
+              linkTo: "Video",
+            },
+            {
+              oX: -28,
+              oY: -32,
+              oZ: 33,
+              rotation: 330,
+              icon: String.fromCodePoint(0xf806),
+              linkTo: "RandomStuff",
             },
           ],
         }
@@ -246,7 +365,7 @@ export default {
 
       this.addRoom(
         this.roomLeft,
-        pPLeft.room,
+        pPLeft,
         false,
         80,
         80,
@@ -259,7 +378,43 @@ export default {
           doors: [
             {
               direction: "right",
-              sign: pPCenter.room,
+              sign: pPCenter.data().room,
+            },
+          ],
+        },
+        {
+          objects: [
+            {
+              oX: 29,
+              oY: -32,
+              oZ: 32,
+              rotation: 225,
+              icon: String.fromCodePoint(0xf256),
+              linkTo: "AboutTrack",
+            },
+            {
+              oX: 25,
+              oY: -32,
+              oZ: -38,
+              rotation: 315,
+              icon: String.fromCodePoint(0xf25b),
+              linkTo: "Website",
+            },
+            {
+              oX: -30,
+              oY: -32,
+              oZ: -35,
+              rotation: 30,
+              icon: String.fromCodePoint(0xf6de),
+              linkTo: "Video",
+            },
+            {
+              oX: -28,
+              oY: -32,
+              oZ: 33,
+              rotation: 330,
+              icon: String.fromCodePoint(0xf806),
+              linkTo: "RandomStuff",
             },
           ],
         }
@@ -275,140 +430,153 @@ export default {
       window.addEventListener("mousemove", this.doorsInView);
 
       window.addEventListener("click", (e) => {
-        this.onDoorClick(e);
+        if (this.clickable) {
+          this.clickable = null;
+          return;
+        }
+        this.clickMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        this.clickMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        this.raycaster.setFromCamera(this.clickMouse, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.scene.children);
+
+        if (intersects.length > 0 && intersects[0].object.userData.clickable) {
+          this.clickable = intersects[0].object;
+
+          this.onDoorClick();
+          this.onObjectClick();
+        }
       });
 
       window.addEventListener("resize", this.onWindowResize);
     },
-    onDoorClick: function (e) {
-      if (this.clickable) {
-        this.clickable = null;
-        return;
-      }
+    onObjectClick: function () {
+      if (this.clickable.userData.name === "Object") {
+        console.log("clickable user data", this.clickable.userData);
+        console.log(this.startPage.stage);
 
-      this.clickMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.clickMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-      this.raycaster.setFromCamera(this.clickMouse, this.camera);
-      const intersects = this.raycaster.intersectObjects(this.scene.children);
-
-      if (intersects.length > 0 && intersects[0].object.userData.clickable) {
-        this.clickable = intersects[0].object;
-
-        let offset = {
-          x: -10,
-          y: 9.5,
-          z: 0.4,
-        };
-
-        switch (true) {
-          case this.clickable.userData.sign === "Center":
-            switch (true) {
-              case this.clickable.userData.direction === "down":
-                offset = {
-                  x: 0.1973,
-                  y: 5.5323,
-                  z: -38.092,
-                };
-                break;
-
-              case this.clickable.userData.direction === "right":
-                offset = {
-                  x: -38.9981,
-                  y: 8.5884,
-                  z: -0.1939,
-                };
-                break;
-              case this.clickable.userData.direction === "up":
-                offset = {
-                  x: 0.0816,
-                  y: 5.9039,
-                  z: 38.0365,
-                };
-                break;
-              case this.clickable.userData.direction === "left":
-                offset = {
-                  x: 38.6803,
-                  y: 10.1896,
-                  z: -0.0668,
-                };
-                break;
-            }
-
-            this.moveToRoom(
-              this.scene.getObjectByName(this.clickable.userData.sign).position,
-              offset,
-              this.clickable.userData.sign,
-              "ProjectPageCenter"
-            );
-
-            console.log("moving to Center");
-            break;
-          case this.clickable.userData.sign === "Project 1":
-            switch (true) {
-              case this.clickable.userData.direction === "up":
-                offset = {
-                  x: 0.0116,
-                  y: 5.6171,
-                  z: -62.3963,
-                };
-                break;
-            }
-
-            this.moveToRoom(
-              this.scene.getObjectByName(this.clickable.userData.sign).position,
-              offset,
-              this.clickable.userData.sign,
-              "ProjectPageUp"
-            );
-            console.log("moving to Project 1");
-            break;
-          case this.clickable.userData.sign === "Project 2":
-            offset = {
-              x: 43.4376,
-              y: 10.6262,
-              z: 0.1676,
-            };
-
-            this.moveToRoom(
-              this.scene.getObjectByName(this.clickable.userData.sign).position,
-              offset,
-              this.clickable.userData.sign,
-              "ProjectPageRight"
-            );
-            console.log("moving to Project 2");
-            break;
-          case this.clickable.userData.sign === "Project 3":
-            offset = {
-              x: -0.59716,
-              y: 6.2247,
-              z: 62.4918,
-            };
-            this.moveToRoom(
-              this.scene.getObjectByName(this.clickable.userData.sign).position,
-              offset,
-              this.clickable.userData.sign,
-              "ProjectPageDown"
-            );
-            console.log("moving to Project 3");
-            break;
-          case this.clickable.userData.sign === "Project 4":
-            offset = {
-              x: -43.4376,
-              y: 10.6262,
-              z: -0.1676,
-            };
-            this.moveToRoom(
-              this.scene.getObjectByName(this.clickable.userData.sign).position,
-              offset,
-              this.clickable.userData.sign,
-              "ProjectPageLeft"
-            );
-            console.log("moving to Project 4");
-            break;
-          default:
-            break;
+        if (this.startPage.stage === this.clickable.userData.linkTo) {
+          this.startPage.stage = this.clickable.userData.defaultStage;
+          return;
+        } else {
+          this.startPage.stage = this.clickable.userData.linkTo;
         }
+      }
+    },
+    onDoorClick: function () {
+      let offset = {
+        x: -10,
+        y: 9.5,
+        z: 0.4,
+      };
+
+      switch (true) {
+        case this.clickable.userData.sign === "Center":
+          switch (true) {
+            case this.clickable.userData.direction === "down":
+              offset = {
+                x: 0.1973,
+                y: 5.5323,
+                z: -38.092,
+              };
+              break;
+
+            case this.clickable.userData.direction === "right":
+              offset = {
+                x: -38.9981,
+                y: 8.5884,
+                z: -0.1939,
+              };
+              break;
+            case this.clickable.userData.direction === "up":
+              offset = {
+                x: 0.0816,
+                y: 5.9039,
+                z: 38.0365,
+              };
+              break;
+            case this.clickable.userData.direction === "left":
+              offset = {
+                x: 38.6803,
+                y: 10.1896,
+                z: -0.0668,
+              };
+              break;
+          }
+
+          this.moveToRoom(
+            this.scene.getObjectByName(this.clickable.userData.sign).position,
+            offset,
+            this.clickable.userData.sign,
+            "ProjectPageCenter"
+          );
+
+          console.log("moving to Center");
+          break;
+        case this.clickable.userData.sign === "Project 1":
+          switch (true) {
+            case this.clickable.userData.direction === "up":
+              offset = {
+                x: 0.0116,
+                y: 5.6171,
+                z: -62.3963,
+              };
+              break;
+          }
+
+          this.moveToRoom(
+            this.scene.getObjectByName(this.clickable.userData.sign).position,
+            offset,
+            this.clickable.userData.sign,
+            "ProjectPageUp"
+          );
+          console.log("moving to Project 1");
+          break;
+        case this.clickable.userData.sign === "Project 2":
+          offset = {
+            x: 43.4376,
+            y: 10.6262,
+            z: 0.1676,
+          };
+
+          this.moveToRoom(
+            this.scene.getObjectByName(this.clickable.userData.sign).position,
+            offset,
+            this.clickable.userData.sign,
+            "ProjectPageRight"
+          );
+          console.log("moving to Project 2");
+          break;
+        case this.clickable.userData.sign === "Project 3":
+          offset = {
+            x: -0.59716,
+            y: 6.2247,
+            z: 62.4918,
+          };
+          this.moveToRoom(
+            this.scene.getObjectByName(this.clickable.userData.sign).position,
+            offset,
+            this.clickable.userData.sign,
+            "ProjectPageDown"
+          );
+          console.log("moving to Project 3");
+          break;
+        case this.clickable.userData.sign === "Project 4":
+          offset = {
+            x: -43.4376,
+            y: 10.6262,
+            z: -0.1676,
+          };
+          this.moveToRoom(
+            this.scene.getObjectByName(this.clickable.userData.sign).position,
+            offset,
+            this.clickable.userData.sign,
+            "ProjectPageLeft"
+          );
+          console.log("moving to Project 4");
+          break;
+        default:
+          break;
       }
     },
     doorsInView: function () {
@@ -462,7 +630,15 @@ export default {
         const duration = 2;
         const delay = 2;
         const y = -20;
+        const targetRoom = this.scene.getObjectByName(room);
+        this.currentRoom.children[1].castShadow = false;
+
+        targetRoom.children[1].castShadow = false;
+        targetRoom.children[1].visible = false;
+        console.log(targetRoom);
+
         this.controls.enabled = false;
+
         console.log("stage ", stage);
         console.log("room", room);
 
@@ -544,11 +720,13 @@ export default {
         }
 
         setTimeout(() => {
+          targetRoom.children[1].castShadow = true;
           this.controls.enabled = true;
           this.controls.target.set(coordinates.x, coordinates.y, coordinates.z);
           this.currentRoom.visible = false;
-          this.currentRoom = this.scene.getObjectByName(room);
+          this.currentRoom = targetRoom;
           this.currentRoom.visible = true;
+          this.currentRoom.children[1].visible = true;
           this.camera.updateProjectionMatrix();
           this.miniMap.currentRoom = stage;
           this.startPage.stage = stage;
@@ -559,7 +737,7 @@ export default {
     },
     addRoom: function (
       room,
-      name,
+      projectPage,
       visible,
       width,
       height,
@@ -568,7 +746,8 @@ export default {
       posX,
       posY,
       posZ,
-      doorOptions
+      doorOptions,
+      objects
     ) {
       const geometry = new THREE.BoxGeometry(width, height, depth);
       const material = new THREE.MeshStandardMaterial({
@@ -587,7 +766,7 @@ export default {
       roomInstance.receiveShadow = true;
 
       this.addDoorModels(
-        name,
+        projectPage.room,
         width,
         height,
         depth,
@@ -599,18 +778,24 @@ export default {
 
       const light = new THREE.PointLight(0xffffff, 1, 300, 1);
       light.position.set(0, 35, 0);
-      light.castShadow = false;
-      light.shadow.mapSize.width = 512; // default
-      light.shadow.mapSize.height = 512; // default
+      light.castShadow = true;
+      light.shadow.mapSize.width = 2048; // default
+      light.shadow.mapSize.height = 2048; // default
       light.shadow.camera.near = 0.5; // default
-      light.shadow.camera.far = 500; // default
+      light.shadow.camera.far = 1000; // default
 
       room.add(roomInstance, light);
       room.position.set(posX, posY, posZ);
       room.visible = visible;
-      room.name = name;
+      room.name = projectPage.data().room;
       room.userData.isRoom = true;
-      room.userData.name = name;
+      room.userData.name = projectPage.data().room;
+
+      console.log(objects);
+
+      for (const object of objects.objects) {
+        this.createRoomObject(object, room, projectPage);
+      }
 
       this.rooms.push(room);
       this.scene.add(room);
@@ -713,6 +898,75 @@ export default {
       );
     },
 
+    createRoomObject(object, room, projectPage) {
+      //Socket
+      const oX = object.oX,
+        oY = object.oY,
+        oZ = object.oZ,
+        rotation = object.rotation,
+        icon = object.icon,
+        linkTo = object.linkTo,
+        pX = room.position.x,
+        pY = room.position.y,
+        pZ = room.position.z;
+
+      const objectModel = new THREE.Group();
+
+      const socketGeometry = new THREE.CylinderGeometry(10, 3, 11, 8, 5);
+
+      const socketMaterial = new THREE.MeshStandardMaterial({
+        color: 0x8fe1f2,
+      });
+
+      const socket = new THREE.Mesh(socketGeometry, socketMaterial);
+      socket.position.set(3.5, -3.5, 0);
+      socket.rotation.set(0, THREE.MathUtils.degToRad(45), 0);
+      socket.receiveShadow = true;
+      socket.castShadow = true;
+
+      objectModel.add(socket);
+
+      const objectMaterial = new THREE.MeshStandardMaterial({
+        color: 0xf7d4e1,
+        emissive: 0xf7d4e1,
+        emissiveIntensity: 1,
+        metalness: 0.3,
+      });
+
+      this.fontLoader.load(
+        "./assets/fonts/Font Awesome 6 Free Solid_Solid.json",
+        (font) => {
+          const objectGeometry = new TextGeometry(icon, {
+            font: font,
+            size: 10,
+            height: 0.2,
+            curveSegments: 5,
+            bevelEnabled: true,
+            bevelThickness: 1.5,
+            bevelSize: 0.1,
+            bevelOffset: -0.1,
+            bevelSegments: 5,
+          });
+
+          objectGeometry.computeBoundingBox();
+
+          const object = new THREE.Mesh(objectGeometry, objectMaterial);
+          object.position.set(-2.5, 5, 0);
+          object.castShadow = true;
+          object.receiveShadow = true;
+          object.userData.clickable = true;
+          object.userData.name = "Object";
+          object.userData.linkTo = linkTo;
+          object.userData.defaultStage = projectPage.name;
+
+          objectModel.add(object);
+          objectModel.position.set(oX + pX, oY + pY, oZ + pZ);
+          objectModel.rotation.set(0, THREE.MathUtils.degToRad(rotation), 0);
+          room.add(objectModel);
+          this.scene.add(objectModel);
+        }
+      );
+    },
     createText: function (text) {
       const material = new THREE.MeshStandardMaterial({
         color: 0xf7d4e1,
@@ -774,6 +1028,8 @@ export default {
       part4.position.set(0, 2.75);
 
       signFrame.add(part1, part2, part3, part4);
+      signFrame.castShadow = true;
+      signFrame.receiveShadow = true;
 
       const sign = new THREE.Mesh(new THREE.PlaneGeometry(11, 5), material);
 
@@ -827,7 +1083,7 @@ export default {
       });
       const door = new THREE.Mesh(doorGeometry, doorMaterial);
       door.receiveShadow = true;
-      door.castShadow = true;
+      door.castShadow = false;
       door.userData.clickable = true;
       door.userData.name = "DOOR";
       door.userData.direction = direction;

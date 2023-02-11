@@ -12,11 +12,13 @@
 </template>
 
 <script>
-import ProjectPageCenter from "./projectpages/ProjectPageCenter.vue";
-import ProjectPageDown from "./projectpages/ProjectPageDown.vue";
-import ProjectPageLeft from "./projectpages/ProjectPageLeft.vue";
-import ProjectPageRight from "./projectpages/ProjectPageRight.vue";
-import ProjectPageUp from "./projectpages/ProjectPageUp.vue";
+import ProjectPageCenter from "./projectpages/Center/ProjectPageCenter.vue";
+import ProjectPageDown from "./projectpages/Down/ProjectPageDown.vue";
+import ProjectPageLeft from "./projectpages/Left/ProjectPageLeft.vue";
+import ProjectPageRight from "./projectpages/Right/ProjectPageRight.vue";
+import ProjectPageUp from "./projectpages/Up/ProjectPageUp.vue";
+import AboutTrack from "./projectpages/Up/AboutTrack.vue";
+import TrailerTrack from "./projectpages/Up/TrailerTack.vue";
 import CanvasBackground from "./CanvasBackground.vue";
 
 export default {
@@ -28,6 +30,8 @@ export default {
     ProjectPageRight,
     ProjectPageUp,
     CanvasBackground,
+    AboutTrack,
+    TrailerTrack,
   },
   data() {
     return {
@@ -40,6 +44,8 @@ export default {
       },
       pPCenter: ProjectPageCenter,
       pPUp: ProjectPageUp,
+      pPUpAboutTrack: AboutTrack,
+      pPUpTrailerTrack: TrailerTrack,
       pPRight: ProjectPageRight,
       pPDown: ProjectPageDown,
       pPLeft: ProjectPageLeft,
@@ -253,7 +259,7 @@ export default {
 </script>
 <style scoped>
 #stage {
-  max-width: 70%;
+  max-width: 50%;
   padding: 0;
 }
 

@@ -15,9 +15,9 @@
 </template>
 
 <script>
-import TextBox from "../TextBox.vue";
-import ContentBox from "../ContentBox.vue";
-import StartPage from "../StartPage.vue";
+import TextBox from "@/components/TextBox.vue";
+import ContentBox from "@/components/ContentBox.vue";
+import StartPage from "@/components/StartPage.vue";
 
 export default {
   extends: StartPage,

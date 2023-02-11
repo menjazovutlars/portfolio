@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import StartPage from "../StartPage.vue";
+import StartPage from "@/components/StartPage.vue";
 
 export default {
   extends: StartPage,
@@ -35,5 +35,6 @@ export default {
 .top-row {
   align-items: center !important;
   margin-bottom: 50vh;
+  max-height: 50vh;
 }
 </style>

@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import StartPage from "../StartPage.vue";
+import StartPage from "@/components/StartPage.vue";
 
 export default {
   extends: StartPage,
