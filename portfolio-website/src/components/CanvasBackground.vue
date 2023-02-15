@@ -1,7 +1,9 @@
 <template>
-  <v-container>
-    <canvas id="canvas-bg"></canvas>
+  <v-container class="canvas-bg-container">
+    <canvas id="canvas-bg" :class="['canvas-bg']"></canvas>
     <MiniMap id="canvas-hand"></MiniMap>
+    <StageBackground></StageBackground>
+    <div id="iframe_container"></div>
     <!-- <span id="canvas-hand">
       <p>x:{{ cameraPosition.x }}</p>
       <p>y:{{ cameraPosition.y }}</p>
@@ -18,12 +20,15 @@
 import * as THREE from "three";
 //import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 //import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
+// import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer";
+// import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import gsap from "gsap";
 
 import MiniMap from "./MiniMap.vue";
+import StageBackground from "./StageBackground.vue";
 
 /*
 0xDB3774
@@ -38,18 +43,23 @@ export default {
   name: "CanvasBG",
   components: {
     MiniMap,
+    StageBackground,
   },
   data: function () {
     return {
       scene: "",
+      scale: 1,
       camera: "",
       cameraPosition: { x: "", y: "", z: "", rotation: "" },
       cameraHand: "",
       renderer: "",
+      css3DRenderer: "",
+      iframeContainer: "",
       torus: "",
       objLoader: "",
       mtlLoader: "",
       controls: "",
+      trackballControls: "",
       ambientLight: "",
       pointLight: "",
       hx: "",
@@ -60,6 +70,7 @@ export default {
       textureLoader: "",
       videoCubeVisible: "",
       videoCube: "",
+      videoWallTexture: "",
       roomCenter: "",
       roomUp: "",
       roomRight: "",
@@ -87,6 +98,9 @@ export default {
         down: false,
         left: false,
       },
+      fullWhiteBackground: true,
+      activateAnimation: false,
+      toLeft: false,
     };
   },
   created() {
@@ -94,6 +108,7 @@ export default {
   },
   mounted() {
     this.canvas = document.getElementById("canvas-bg");
+    this.iframeContainer = document.getElementById("iframe_container");
     this.startPage = this.$root.$refs.StartPage;
     this.miniMap = this.$root.$refs.MiniMap;
     this.initTHREE();
@@ -107,12 +122,12 @@ export default {
 
       this.camera = new THREE.PerspectiveCamera(
         40,
-        window.innerWidth / window.innerHeight,
+        window.innerWidth / 2 / window.innerHeight,
         0.1,
         1000
       );
 
-      this.camera.position.set(5, -2, 0);
+      this.camera.position.set(5 * this.scale, -2 * this.scale, 0 * this.scale);
 
       this.renderer = new THREE.WebGLRenderer({
         canvas: document.querySelector("#canvas-bg"),
@@ -120,18 +135,17 @@ export default {
       });
 
       this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setSize(window.innerWidth / 2, window.innerHeight);
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
-      this.controls.zoomSpeed = 5;
-      this.controls.enabled = false;
-
+      this.controls.zoomSpeed = 5 * this.scale;
+      //this.controls.enabled = false;
       this.controls.enableZoom = true;
-      this.controls.enablePan = false;
-      this.controls.maxDistance = 40;
+      // this.controls.enablePan = false;
+      // this.controls.maxDistance = 40 * this.scale;
 
       this.raycaster = new THREE.Raycaster();
       this.raycaster.firstHitOnly = true;
@@ -153,9 +167,9 @@ export default {
         this.roomCenter,
         pPCenter,
         true,
-        80,
-        80,
-        100,
+        80 * this.scale,
+        80 * this.scale,
+        100 * this.scale,
         0x8fe1f2,
         0,
         0,
@@ -196,13 +210,13 @@ export default {
         this.roomUp,
         pPUp,
         false,
-        80,
-        80,
-        100,
+        80 * this.scale,
+        80 * this.scale,
+        100 * this.scale,
         0xf2b67c,
         0,
         0,
-        -102,
+        -102 * this.scale,
         {
           doors: [
             {
@@ -214,33 +228,33 @@ export default {
         {
           objects: [
             {
-              oX: 25,
-              oY: -32,
-              oZ: -38,
+              oX: 25 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -38 * this.scale,
               rotation: 315,
               icon: String.fromCodePoint(0xf806),
               linkTo: "Website",
             },
             {
-              oX: 29,
-              oY: -32,
-              oZ: 32,
+              oX: 29 * this.scale,
+              oY: -32 * this.scale,
+              oZ: 32 * this.scale,
               rotation: 225,
               icon: String.fromCodePoint(0xf255),
               linkTo: "AboutTrack",
             },
             {
-              oX: -30,
-              oY: -32,
-              oZ: -35,
+              oX: -30 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -35 * this.scale,
               rotation: 30,
               icon: String.fromCodePoint(0xf259),
               linkTo: "TrailerTrack",
             },
             {
-              oX: -28,
-              oY: -32,
-              oZ: 33,
+              oX: -28 * this.scale,
+              oY: -32 * this.scale,
+              oZ: 33 * this.scale,
               rotation: 330,
               icon: String.fromCodePoint(0xf257),
               linkTo: "RandomStuff",
@@ -253,11 +267,11 @@ export default {
         this.roomRight,
         pPRight,
         false,
-        80,
-        80,
-        100,
+        80 * this.scale,
+        80 * this.scale,
+        100 * this.scale,
         0x8fe1f2,
-        82,
+        82 * this.scale,
         0,
         0,
         {
@@ -271,33 +285,33 @@ export default {
         {
           objects: [
             {
-              oX: 29,
-              oY: -32,
-              oZ: 32,
+              oX: 29 * this.scale,
+              oY: -32 * this.scale,
+              oZ: 32 * this.scale,
               rotation: 225,
               icon: String.fromCodePoint(0xf256),
               linkTo: "AboutTrack",
             },
             {
-              oX: 25,
-              oY: -32,
-              oZ: -38,
+              oX: 25 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -38 * this.scale,
               rotation: 315,
               icon: String.fromCodePoint(0xf25b),
               linkTo: "Website",
             },
             {
-              oX: -30,
-              oY: -32,
-              oZ: -35,
+              oX: -30 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -35 * this.scale,
               rotation: 30,
               icon: String.fromCodePoint(0xf6de),
               linkTo: "Video",
             },
             {
-              oX: -28,
-              oY: -32,
-              oZ: 33,
+              oX: -28 * this.scale,
+              oY: -32 * this.scale,
+              oZ: 33 * this.scale,
               rotation: 330,
               icon: String.fromCodePoint(0xf806),
               linkTo: "RandomStuff",
@@ -310,13 +324,13 @@ export default {
         this.roomDown,
         pPDown,
         false,
-        80,
-        80,
-        100,
+        80 * this.scale,
+        80 * this.scale,
+        100 * this.scale,
         0x8fe1f2,
         0,
         0,
-        102,
+        102 * this.scale,
         {
           doors: [
             {
@@ -328,33 +342,33 @@ export default {
         {
           objects: [
             {
-              oX: 29,
-              oY: -32,
-              oZ: 32,
+              oX: 29 * this.scale,
+              oY: -32 * this.scale,
+              oZ: 32 * this.scale,
               rotation: 225,
               icon: String.fromCodePoint(0xf256),
               linkTo: "AboutTrack",
             },
             {
-              oX: 25,
-              oY: -32,
-              oZ: -38,
+              oX: 25 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -38 * this.scale,
               rotation: 315,
               icon: String.fromCodePoint(0xf25b),
               linkTo: "Website",
             },
             {
-              oX: -30,
-              oY: -32,
-              oZ: -35,
+              oX: -30 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -35 * this.scale,
               rotation: 30,
               icon: String.fromCodePoint(0xf6de),
               linkTo: "Video",
             },
             {
-              oX: -28,
-              oY: -32,
-              oZ: 33,
+              oX: -28 * this.scale,
+              oY: -32 * this.scale,
+              oZ: 33 * this.scale,
               rotation: 330,
               icon: String.fromCodePoint(0xf806),
               linkTo: "RandomStuff",
@@ -367,11 +381,11 @@ export default {
         this.roomLeft,
         pPLeft,
         false,
-        80,
-        80,
-        100,
+        80 * this.scale,
+        80 * this.scale,
+        100 * this.scale,
         0x8fe1f2,
-        -82,
+        -82 * this.scale,
         0,
         0,
         {
@@ -385,33 +399,33 @@ export default {
         {
           objects: [
             {
-              oX: 29,
-              oY: -32,
-              oZ: 32,
+              oX: 29 * this.scale,
+              oY: -32 * this.scale,
+              oZ: 32 * this.scale,
               rotation: 225,
               icon: String.fromCodePoint(0xf256),
               linkTo: "AboutTrack",
             },
             {
-              oX: 25,
-              oY: -32,
-              oZ: -38,
+              oX: 25 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -38 * this.scale,
               rotation: 315,
               icon: String.fromCodePoint(0xf25b),
               linkTo: "Website",
             },
             {
-              oX: -30,
-              oY: -32,
-              oZ: -35,
+              oX: -30 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -35 * this.scale,
               rotation: 30,
               icon: String.fromCodePoint(0xf6de),
               linkTo: "Video",
             },
             {
-              oX: -28,
-              oY: -32,
-              oZ: 33,
+              oX: -28 * this.scale,
+              oY: -32 * this.scale,
+              oZ: 33 * this.scale,
               rotation: 330,
               icon: String.fromCodePoint(0xf806),
               linkTo: "RandomStuff",
@@ -434,8 +448,11 @@ export default {
           this.clickable = null;
           return;
         }
-        this.clickMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        this.clickMouse.x = (e.clientX / window.innerWidth) * 4 - 1;
         this.clickMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        console.log(this.clickMouse.x, this.clickMouse.y);
+        console.log(e.clientX, e.clientY);
 
         this.raycaster.setFromCamera(this.clickMouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.scene.children);
@@ -452,12 +469,10 @@ export default {
     },
     onObjectClick: function () {
       if (this.clickable.userData.name === "Object") {
-        console.log("clickable user data", this.clickable.userData);
-        console.log(this.startPage.stage);
+        console.log("clickable user data", this.clickable.userData.linkTo);
 
         if (this.startPage.stage === this.clickable.userData.linkTo) {
           this.startPage.stage = this.clickable.userData.defaultStage;
-          return;
         } else {
           this.startPage.stage = this.clickable.userData.linkTo;
         }
@@ -598,6 +613,7 @@ export default {
       for (const door of doors) {
         const intersects = this.windowView.intersectsObject(door);
         if (intersects && door.userData.room === this.currentRoom.name) {
+          console.log("intersects", intersects);
           switch (door.userData.direction) {
             case "up":
               this.inView.up = true;
@@ -635,12 +651,8 @@ export default {
 
         targetRoom.children[1].castShadow = false;
         targetRoom.children[1].visible = false;
-        console.log(targetRoom);
 
         this.controls.enabled = false;
-
-        console.log("stage ", stage);
-        console.log("room", room);
 
         gsap.fromTo(
           this.camera.position,
@@ -759,10 +771,6 @@ export default {
 
       const roomInstance = new THREE.Mesh(geometry, material);
       roomInstance.name = "Room";
-
-      //this.roomUp.castShadow = true;
-
-      //room.position.set(posX, posY, posZ);
       roomInstance.receiveShadow = true;
 
       this.addDoorModels(
@@ -1225,147 +1233,6 @@ export default {
       }
     },
 
-    addTorus: function () {
-      const geometry = new THREE.TorusGeometry(25, 5, 20, 50);
-
-      /*
-      const material = this.loadTextures(
-        "./assets/materials/chipping-painted-wall/chipping-painted-wall_albedo.png",
-        "./assets/materials/chipping-painted-wall/chipping-painted-wall_normal-ogl.png",
-        "./assets/materials/chipping-painted-wall/chipping-painted-wall_height.png",
-        "./assets/materials/chipping-painted-wall/chipping-painted-wall_roughness.png",
-        "./assets/materials/chipping-painted-wall/chipping-painted-wall_ao.png",
-        "./assets/materials/chipping-painted-wall/chipping-painted-wall_metallic.png",
-        0.05,
-        0.5,
-        1
-      );
-     
-
-      const material = this.loadTextures(
-        "./assets/materials/alien-panels/alien-panels_albedo.png",
-        "./assets/materials/alien-panels/alien-panels_normal-ogl.png",
-        "./assets/materials/alien-panels/alien-panels_height.png",
-        "./assets/materials/alien-panels/alien-panels_roughness.png",
-        "./assets/materials/alien-panels/alien-panels_ao.png",
-        "./assets/materials/alien-panels/alien-panels_metallic.png",
-        0.05,
-        0.5,
-        1
-      );
-      
-       */
-
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xed872d,
-        wireframe: true,
-      });
-
-      this.torus = new THREE.Mesh(geometry, material);
-      //this.torus.geometry.attributes.uv2 = this.torus.geometry.attributes.uv;
-      this.scene.add(this.torus);
-    },
-
-    draw3dLine: function (predictions) {
-      const video = this.$root.$refs.VideoBoxOffscreen.$refs.video;
-      const webcam = this.$root.$refs.WebCam;
-      const cv = document.getElementById("canvas-hand");
-
-      const diffWidth = video.offsetWidth - cv.width;
-      const diffHeight = video.offsetHeight - cv.height;
-      const scaleX = video.offsetWidth / webcam.streamOutput.width;
-      const scaleY = video.offsetHeight / webcam.streamOutput.height;
-      webcam.dx = cv.width / 2;
-      webcam.dy = cv.height / 2;
-
-      if (predictions.length > 0) {
-        predictions.forEach((prediction) => {
-          const landmarks = prediction.landmarks;
-          this.hx = landmarks[0][0] * scaleX - diffWidth;
-          this.hy = landmarks[0][1] * scaleY - diffHeight;
-          for (let i = 0; i < landmarks.length; i++) {
-            const x = landmarks[i][0] * scaleX - diffWidth;
-            const y = landmarks[i][1] * scaleY - diffHeight;
-            const z = landmarks[i][2];
-
-            const geometry = new THREE.SphereGeometry(5, 32, 16);
-            const material = new THREE.MeshBasicMaterial({
-              color: 0xff6347,
-            });
-            const sphere = new THREE.Mesh(geometry, material);
-
-            sphere.position.set(x, y, z);
-
-            this.scene.add(sphere);
-          }
-          for (let j = 0; j < Object.keys(webcam.fingerJoints).length; j++) {
-            /*
-            const finger = Object.keys(webcam.fingerJoints)[j];
-            //  Loop through pairs of joints
-            for (let k = 0; k < webcam.fingerJoints[finger].length - 1; k++) {
-              // Get pairs of joints
-              //const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
-              //const points = [];
-              const firstJointIndex = webcam.fingerJoints[finger][k];
-              const secondJointIndex = webcam.fingerJoints[finger][k + 1];
-
-              // Draw path
-              this.ctx.beginPath();
-              this.ctx.moveTo(
-                landmarks[firstJointIndex][0] * scaleX - diffWidth,
-                landmarks[firstJointIndex][1] * scaleY - diffHeight
-              );
-              this.ctx.lineTo(
-                landmarks[secondJointIndex][0] * scaleX - diffWidth,
-                landmarks[secondJointIndex][1] * scaleY - diffHeight
-              );
-              this.ctx.strokeStyle = "#71C6E0";
-              this.ctx.lineWidth = 4;
-              this.ctx.stroke();
-            }
-            */
-          }
-        });
-      }
-    },
-
-    loadTextures: function (
-      pathBaseColor,
-      pathNormalMap,
-      pathHeightMap,
-      pathRoughnessMap,
-      pathAmbientOcclusionsMap,
-      pathMetallic,
-      displacementScale,
-      roughness,
-      metalness,
-      emissive,
-      emissiveIntensity
-    ) {
-      const baseColor = this.textureLoader.load(pathBaseColor);
-      const normalMap = this.textureLoader.load(pathNormalMap);
-      const heightMap = this.textureLoader.load(pathHeightMap);
-      const roughnessMap = this.textureLoader.load(pathRoughnessMap);
-      const ambientOcclusionsMap = this.textureLoader.load(
-        pathAmbientOcclusionsMap
-      );
-      const metallic = this.textureLoader.load(pathMetallic);
-
-      return (this.material = new THREE.MeshStandardMaterial({
-        map: baseColor,
-        normalMap: normalMap,
-        displacementMap: heightMap,
-        displacementScale: displacementScale,
-        roughnessMap: roughnessMap,
-        roughness: roughness,
-        aoMap: ambientOcclusionsMap,
-        metalnessMap: metallic,
-        metalness: metalness,
-        emissive: emissive,
-        emissiveIntensity: emissiveIntensity,
-      }));
-    },
-
     addVideoCube: function (videoID) {
       const video = document.getElementById(videoID);
       this.videoTexture = new THREE.VideoTexture(video);
@@ -1384,40 +1251,10 @@ export default {
         Math.PI
       );
 
-      /*
-      const material = this.loadTextures(
-        "./assets/materials/alien-panels/alien-panels_albedo.png",
-        "./assets/materials/alien-panels/alien-panels_normal-ogl.png",
-        "./assets/materials/alien-panels/alien-panels_height.png",
-        "./assets/materials/alien-panels/alien-panels_roughness.png",
-        "./assets/materials/alien-panels/alien-panels_ao.png",
-        "./assets/materials/alien-panels/alien-panels_metallic.png",
-        0.05,
-        0.5,
-        1
-      );
-      
-    
-
-      const material = this.loadTextures(
-        "./assets/materials/cog-patterned-metal/cog-patterned-metal_albedo.png",
-        "./assets/materials/cog-patterned-metal/cog-patterned-metal_normal-ogl.png",
-        "./assets/materials/cog-patterned-metal/cog-patterned-metal_height.png",
-        "./assets/materials/cog-patterned-metal/cog-patterned-metal_roughness.png",
-        "./assets/materials/cog-patterned-metal/cog-patterned-metal_ao.png",
-        "./assets/materials/cog-patterned-metal/cog-patterned-metal_metallic.png",
-        0.05,
-        0.5,
-        1
-      );
-      
-        */
-
       const material = new THREE.MeshStandardMaterial({
         color: 0x6fa8dc,
       });
 
-      //const boxGeometry = new THREE.BoxGeometry(6.4, 4.8, 1);
       const planeGeometry = new THREE.PlaneGeometry(6.4, 4.8);
 
       const screenHolder = new THREE.Mesh(cylinderGeometry, material);
@@ -1457,86 +1294,18 @@ export default {
       }
     },
 
-    makeScene: function (elem) {
-      const scene = new THREE.Scene();
-
-      const fov = 45;
-      const aspect = 2; // the canvas default
-      const near = 0.1;
-      const far = 5;
-      const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      camera.position.z = 2;
-      camera.position.set(0, 1, 2);
-      camera.lookAt(0, 0, 0);
-
-      {
-        const color = 0xffffff;
-        const intensity = 1;
-        const light = new THREE.DirectionalLight(color, intensity);
-        light.position.set(-1, 2, 4);
-        scene.add(light);
-      }
-
-      return { scene, camera, elem };
-    },
-
-    setupSceneHand: function () {
-      const sceneInfo = this.makeScene(document.getElementById("canvas-hand"));
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
-      const material = new THREE.MeshPhongMaterial({ color: "red" });
-      const mesh = new THREE.Mesh(geometry, material);
-      sceneInfo.scene.add(mesh);
-      sceneInfo.mesh = mesh;
-      return sceneInfo;
-    },
-
-    renderSceneInfo: function (sceneInfo) {
-      const { scene, camera, elem } = sceneInfo;
-
-      // get the viewport relative position of this element
-      const { left, right, top, bottom, width, height } =
-        elem.getBoundingClientRect();
-
-      const isOffscreen =
-        bottom < 0 ||
-        top > this.renderer.domElement.clientHeight ||
-        right < 0 ||
-        left > this.renderer.domElement.clientWidth;
-
-      if (isOffscreen) {
-        return;
-      }
-
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-
-      const positiveYUpBottom = this.renderer.domElement.height - bottom;
-      this.renderer.setScissor(left, positiveYUpBottom, width, height);
-      this.renderer.setViewport(left, positiveYUpBottom, width, height);
-
-      this.renderer.render(scene, camera);
-    },
-
     animate: function () {
-      /*
-      this.torus.rotation.x += 0.001;
-      this.torus.rotation.y += 0.002;
-      this.torus.rotation.z += 0.0004;
-      */
       this.cameraPosition.x = this.camera.position.x;
       this.cameraPosition.y = this.camera.position.y;
       this.cameraPosition.z = this.camera.position.z;
       this.cameraPosition.rotation = this.camera.rotation;
       this.cameraPosition.zoom = this.camera.zoom;
-      //this.renderSceneInfo(this.canvasHand);
+
       addEventListener("keydown", (event) => {
         if (this.videoCubeVisible) {
           this.rotateVideoCube(this.videoCube, event);
         }
       });
-
-      // console.log(this.currentRoom.userData.name);
-      // console.log(this.startPage.stage);
 
       this.controls.update();
       this.renderer.render(this.scene, this.camera);
@@ -1544,20 +1313,28 @@ export default {
     },
 
     onWindowResize() {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.aspect = window.innerWidth / 2 / window.innerHeight;
       this.camera.updateProjectionMatrix();
 
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setSize(window.innerWidth / 2, window.innerHeight);
     },
   },
 };
 </script>
 
 <style lang="scss" scoped>
-#canvas-bg {
+.canvas-bg {
+  position: fixed;
+  top: 0;
+  right: 50vw;
+  width: 50vw !important;
+}
+
+#iframe_container {
   position: fixed;
   top: 0;
   left: 0;
+  pointer-events: none;
 }
 
 #canvas-hand {

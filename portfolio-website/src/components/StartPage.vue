@@ -1,12 +1,17 @@
 <template lang="">
   <v-app>
-    <v-container d-flex justify center fluid fill-height>
-      <CanvasBackground></CanvasBackground>
+    <v-container d-flex justify center fluid fill-height id="stage-container">
       <v-component
         id="stage"
         v-bind:is="stage"
-        :class="[stageInvisible ? 'invisible' : '']"
+        :class="[
+          stageClass,
+          stageInvisible ? 'invisible' : '',
+          toRight ? 'to-right' : '',
+          toRightAnimation ? 'to-right-animation' : '',
+        ]"
       ></v-component>
+      <CanvasBackground></CanvasBackground>
     </v-container>
   </v-app>
 </template>
@@ -49,7 +54,10 @@ export default {
       pPRight: ProjectPageRight,
       pPDown: ProjectPageDown,
       pPLeft: ProjectPageLeft,
+      stageClass: "stage",
       stageInvisible: false,
+      toRightAnimation: false,
+      toRight: false,
     };
   },
   created() {
@@ -258,12 +266,35 @@ export default {
 };
 </script>
 <style scoped>
-#stage {
+.stage {
   max-width: 50%;
   padding: 0;
+  position: relative;
+}
+
+.to-right-animation {
+  animation: to-the-right ease-in-out 3s 0s 1;
+}
+
+.to-right {
+  margin-right: 0;
+  padding: 12px;
+  max-width: 50%;
 }
 
 .invisible {
   display: none !important;
+}
+
+@keyframes to-the-right {
+  0% {
+    max-width: 50%;
+  }
+
+  100% {
+    margin-right: 0;
+    padding: 12px;
+    max-width: 100%;
+  }
 }
 </style>

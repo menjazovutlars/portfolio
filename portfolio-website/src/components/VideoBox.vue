@@ -1,13 +1,11 @@
 <template>
-  <keep-alive>
-    <video
-      ref="video"
-      autoplay
-      class="camera-feed"
-      id="camera-feed"
-      v-show="false"
-    ></video>
-  </keep-alive>
+  <video
+    ref="video"
+    autoplay
+    class="camera-feed"
+    id="camera-feed"
+    v-show="false"
+  ></video>
 </template>
 
 <script>

@@ -25,6 +25,15 @@ export default {
       this.$root.$refs.CanvasBG.cameraReveal();
       this.$root.$refs.ProjectPageCenter.topRow = true;
       this.$root.$refs.ProjectPageCenter.centerRow = false;
+      this.$root.$refs.StageBG.activateAnimation = true;
+      this.$root.$refs.StartPage.toRightAnimation = true;
+
+      setTimeout(() => {
+        this.$root.$refs.StageBG.fullWhiteBackground = false;
+        this.$root.$refs.StageBG.activateAnimation = false;
+        this.$root.$refs.StartPage.toRight = true;
+        this.$root.$refs.StartPage.toRightAnimation = false;
+      }, 3000);
     },
   },
 };

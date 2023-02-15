@@ -63,16 +63,16 @@ export default {
 
 .top-row {
   align-items: center !important;
-  animation: float-up ease-in-out 3s 0s 1 forwards;
+  animation: float-up ease-in-out 3s 0s 1;
 }
 
 @keyframes float-up {
   0% {
-    margin-bottom: 0;
+    margin-left: 0;
   }
 
   100% {
-    margin-bottom: 50vh;
+    margin-left: 50vw;
   }
 }
 </style>
