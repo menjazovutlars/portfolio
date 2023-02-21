@@ -1,7 +1,10 @@
 <template>
-  <v-container class="canvas-bg-container">
+  <v-container>
     <canvas id="canvas-bg" :class="['canvas-bg']"></canvas>
+    <div id="door-transition" :class="['canvas-bg']"></div>
     <MiniMap id="canvas-hand"></MiniMap>
+
+    <LoadingScreen :class="[isLoading ? '' : 'invisible']"></LoadingScreen>
     <StageBackground></StageBackground>
     <div id="iframe_container"></div>
     <!-- <span id="canvas-hand">
@@ -29,6 +32,7 @@ import gsap from "gsap";
 
 import MiniMap from "./MiniMap.vue";
 import StageBackground from "./StageBackground.vue";
+import LoadingScreen from "./LoadingScreen.vue";
 
 /*
 0xDB3774
@@ -44,6 +48,7 @@ export default {
   components: {
     MiniMap,
     StageBackground,
+    LoadingScreen,
   },
   data: function () {
     return {
@@ -65,11 +70,13 @@ export default {
       hx: "",
       hy: "",
       canvas: "",
+      doorTransition: "",
       canvasHand: "",
       videoTexture: "",
       textureLoader: "",
       videoCubeVisible: "",
       videoCube: "",
+      videoMaterial: "",
       videoWallTexture: "",
       roomCenter: "",
       roomUp: "",
@@ -91,6 +98,7 @@ export default {
       startPage: "",
       clickable: THREE.Object3D,
       isMoving: false,
+      isLoading: false,
       windowView: new THREE.Frustum(),
       inView: {
         up: false,
@@ -111,6 +119,7 @@ export default {
     this.iframeContainer = document.getElementById("iframe_container");
     this.startPage = this.$root.$refs.StartPage;
     this.miniMap = this.$root.$refs.MiniMap;
+    this.doorTransition = document.getElementById("door-transition");
     this.initTHREE();
     this.animate();
 
@@ -195,7 +204,16 @@ export default {
           ],
         },
         {
-          objects: [],
+          objects: [
+            {
+              oX: -30 * this.scale,
+              oY: -32 * this.scale,
+              oZ: -35 * this.scale,
+              rotation: 30,
+              icon: "",
+              linkTo: "",
+            },
+          ],
         }
       );
 
@@ -257,7 +275,7 @@ export default {
               oZ: 33 * this.scale,
               rotation: 330,
               icon: String.fromCodePoint(0xf257),
-              linkTo: "RandomStuff",
+              href: "https://github.com/menjazovutlars/track-app/",
             },
           ],
         }
@@ -441,7 +459,9 @@ export default {
 
       this.renderer.render(this.scene, this.camera);
 
-      window.addEventListener("mousemove", this.doorsInView);
+      window.addEventListener("mousemove", () => {
+        this.doorsInView();
+      });
 
       window.addEventListener("click", (e) => {
         if (this.clickable) {
@@ -451,9 +471,6 @@ export default {
         this.clickMouse.x = (e.clientX / window.innerWidth) * 4 - 1;
         this.clickMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
-        console.log(this.clickMouse.x, this.clickMouse.y);
-        console.log(e.clientX, e.clientY);
-
         this.raycaster.setFromCamera(this.clickMouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.scene.children);
 
@@ -462,20 +479,42 @@ export default {
 
           this.onDoorClick();
           this.onObjectClick();
+          this.onVideoCubeClick();
         }
       });
 
       window.addEventListener("resize", this.onWindowResize);
     },
+    onVideoCubeClick: function () {
+      if (
+        this.clickable.userData.name === "VideoCubeScreen" &&
+        this.videoCube.userData.placed === true
+      ) {
+        this.$root.$refs.WebCam.streamVideo();
+      }
+    },
     onObjectClick: function () {
       if (this.clickable.userData.name === "Object") {
-        console.log("clickable user data", this.clickable.userData.linkTo);
-
-        if (this.startPage.stage === this.clickable.userData.linkTo) {
+        this.changeStage(this.clickable.userData.linkTo);
+        this.openLink(this.clickable.userData.href);
+      }
+    },
+    changeStage: function (linkTo) {
+      if (linkTo === undefined) {
+        return;
+      } else {
+        if (this.startPage.stage === linkTo) {
           this.startPage.stage = this.clickable.userData.defaultStage;
         } else {
-          this.startPage.stage = this.clickable.userData.linkTo;
+          this.startPage.stage = linkTo;
         }
+      }
+    },
+    openLink: function (href) {
+      if (href === undefined) {
+        return;
+      } else {
+        open(href);
       }
     },
     onDoorClick: function () {
@@ -486,7 +525,8 @@ export default {
       };
 
       switch (true) {
-        case this.clickable.userData.sign === "Center":
+        case this.clickable.userData.sign ===
+          this.startPage.pPCenter.data().room:
           switch (true) {
             case this.clickable.userData.direction === "down":
               offset = {
@@ -523,12 +563,20 @@ export default {
             this.scene.getObjectByName(this.clickable.userData.sign).position,
             offset,
             this.clickable.userData.sign,
-            "ProjectPageCenter"
+            this.startPage.pPCenter.name
           );
+
+          // this.$root.$refs.WebCam.continueVideo();
+          if (this.videoCubeVisible) {
+            this.placeVideoCubeOnSocket();
+          }
+          if (this.videoCube.userData.streaming) {
+            this.updateVideoTexture();
+          }
 
           console.log("moving to Center");
           break;
-        case this.clickable.userData.sign === "Project 1":
+        case this.clickable.userData.sign === this.startPage.pPUp.data().room:
           switch (true) {
             case this.clickable.userData.direction === "up":
               offset = {
@@ -543,11 +591,12 @@ export default {
             this.scene.getObjectByName(this.clickable.userData.sign).position,
             offset,
             this.clickable.userData.sign,
-            "ProjectPageUp"
+            this.startPage.pPUp.name
           );
           console.log("moving to Project 1");
           break;
-        case this.clickable.userData.sign === "Project 2":
+        case this.clickable.userData.sign ===
+          this.startPage.pPRight.data().room:
           offset = {
             x: 43.4376,
             y: 10.6262,
@@ -558,11 +607,11 @@ export default {
             this.scene.getObjectByName(this.clickable.userData.sign).position,
             offset,
             this.clickable.userData.sign,
-            "ProjectPageRight"
+            this.startPage.pPRight.name
           );
           console.log("moving to Project 2");
           break;
-        case this.clickable.userData.sign === "Project 3":
+        case this.clickable.userData.sign === this.startPage.pPDown.data().room:
           offset = {
             x: -0.59716,
             y: 6.2247,
@@ -572,11 +621,11 @@ export default {
             this.scene.getObjectByName(this.clickable.userData.sign).position,
             offset,
             this.clickable.userData.sign,
-            "ProjectPageDown"
+            this.startPage.pPdown.name
           );
           console.log("moving to Project 3");
           break;
-        case this.clickable.userData.sign === "Project 4":
+        case this.clickable.userData.sign === this.startPage.pPLeft.data().room:
           offset = {
             x: -43.4376,
             y: 10.6262,
@@ -586,7 +635,7 @@ export default {
             this.scene.getObjectByName(this.clickable.userData.sign).position,
             offset,
             this.clickable.userData.sign,
-            "ProjectPageLeft"
+            this.startPage.pPLeft.name
           );
           console.log("moving to Project 4");
           break;
@@ -612,8 +661,8 @@ export default {
 
       for (const door of doors) {
         const intersects = this.windowView.intersectsObject(door);
+
         if (intersects && door.userData.room === this.currentRoom.name) {
-          console.log("intersects", intersects);
           switch (door.userData.direction) {
             case "up":
               this.inView.up = true;
@@ -641,11 +690,12 @@ export default {
       if (this.isMoving) {
         return;
       } else {
-        this.startPage.stageInvisible = true;
+        this.startPage.stageInvisible = false;
         this.isMoving = true;
-        const duration = 2;
-        const delay = 2;
+        const duration = 0.7;
+        const delay = 0.8;
         const y = -20;
+        y;
         const targetRoom = this.scene.getObjectByName(room);
         this.currentRoom.children[1].castShadow = false;
 
@@ -654,69 +704,35 @@ export default {
 
         this.controls.enabled = false;
 
+        const props = new this.createjs.PlayPropsConfig().set({
+          interrupt: this.createjs.Sound.INTERRUPT_NONE,
+        });
+        this.createjs.Sound.play(this.$root.$refs.sounds[6].id, props);
+
         gsap.fromTo(
-          this.camera.position,
+          this.doorTransition,
           {
-            x: this.camera.position.x,
-            y: this.camera.position.y,
-            z: this.camera.position.z,
+            background:
+              "radial-gradient(circle, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)",
           },
           {
-            x: offset.x / 2,
-            y: y,
-            z: offset.z / 2,
+            background:
+              "radial-gradient(circle, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%)",
             duration: duration,
-            ease: "sine.out",
           }
         );
 
         gsap.fromTo(
-          this.camera.position,
+          this.doorTransition,
           {
-            x: offset.x / 2,
-            y: y,
-            z: offset.z / 2,
+            background:
+              "radial-gradient(circle, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%)",
           },
           {
-            x: offset.x,
-            y: offset.y,
-            z: offset.z,
-            delay: delay,
+            background:
+              "radial-gradient(circle, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)",
             duration: duration,
-            ease: "sine.in",
-          }
-        );
-
-        gsap.fromTo(
-          this.controls.target,
-          {
-            x: this.controls.target.x,
-            y: this.controls.target.y,
-            z: this.controls.target.z,
-          },
-          {
-            x: offset.x / 2,
-            y: y,
-            z: offset.z / 2,
-            duration: duration,
-            ease: "sine.out",
-          }
-        );
-
-        gsap.fromTo(
-          this.controls.target,
-          {
-            x: offset.x / 2,
-            y: y,
-            z: offset.z / 2,
-          },
-          {
-            x: coordinates.x,
-            y: coordinates.y,
-            z: coordinates.z,
-            delay: delay,
-            duration: duration,
-            ease: "sine.in",
+            delay: delay + 0.1,
           }
         );
 
@@ -732,6 +748,11 @@ export default {
         }
 
         setTimeout(() => {
+          this.camera.position.set(offset.x, offset.y, offset.z);
+          this.controls.target.set(offset.x, offset.y, offset.z);
+        }, duration * 1000);
+
+        setTimeout(() => {
           targetRoom.children[1].castShadow = true;
           this.controls.enabled = true;
           this.controls.target.set(coordinates.x, coordinates.y, coordinates.z);
@@ -744,7 +765,7 @@ export default {
           this.startPage.stage = stage;
           this.startPage.stageInvisible = false;
           this.isMoving = false;
-        }, 4000);
+        }, duration * 2000);
       }
     },
     addRoom: function (
@@ -774,7 +795,7 @@ export default {
       roomInstance.receiveShadow = true;
 
       this.addDoorModels(
-        projectPage.room,
+        projectPage.data().room,
         width,
         height,
         depth,
@@ -798,8 +819,6 @@ export default {
       room.name = projectPage.data().room;
       room.userData.isRoom = true;
       room.userData.name = projectPage.data().room;
-
-      console.log(objects);
 
       for (const object of objects.objects) {
         this.createRoomObject(object, room, projectPage);
@@ -906,6 +925,42 @@ export default {
       );
     },
 
+    placeVideoCubeOnSocket: function () {
+      if (this.videoCube.userData.placed) {
+        return;
+      }
+      this.videoCube.position.set(-25, -25, -35);
+      this.videoCube.rotation.set(
+        THREE.MathUtils.degToRad(-15),
+        THREE.MathUtils.degToRad(32),
+        THREE.MathUtils.degToRad(5)
+      );
+      this.videoCube.userData.placed = true;
+    },
+
+    turnOffScreen: function () {
+      const screen = this.scene.getObjectByName("VideoCubeScreen");
+      screen.material = new THREE.MeshStandardMaterial({
+        color: 0x000000,
+        side: THREE.FrontSide,
+      });
+    },
+
+    updateVideoTexture: function (videoID) {
+      const screen = this.scene.getObjectByName("VideoCubeScreen");
+      const video = document.getElementById(videoID);
+      video.addEventListener("loadeddata", () => {
+        this.videoTexture.dispose();
+        this.videoTexture = new THREE.VideoTexture(video);
+        this.videoMaterial = new THREE.MeshBasicMaterial({
+          map: this.videoTexture,
+          side: THREE.FrontSide,
+          toneMapped: false,
+        });
+        screen.material = this.videoMaterial;
+      });
+    },
+
     createRoomObject(object, room, projectPage) {
       //Socket
       const oX = object.oX,
@@ -914,6 +969,7 @@ export default {
         rotation = object.rotation,
         icon = object.icon,
         linkTo = object.linkTo,
+        href = object.href,
         pX = room.position.x,
         pY = room.position.y,
         pZ = room.position.z;
@@ -965,6 +1021,7 @@ export default {
           object.userData.clickable = true;
           object.userData.name = "Object";
           object.userData.linkTo = linkTo;
+          object.userData.href = href;
           object.userData.defaultStage = projectPage.name;
 
           objectModel.add(object);
@@ -975,6 +1032,7 @@ export default {
         }
       );
     },
+
     createText: function (text) {
       const material = new THREE.MeshStandardMaterial({
         color: 0xf7d4e1,
@@ -1233,10 +1291,22 @@ export default {
       }
     },
 
+    activateVideoCube: function (videoID) {
+      const video = document.getElementById(videoID);
+      this.videoTexture = new THREE.VideoTexture(video);
+      this.videoMaterial.dispose();
+      this.videoMaterial = new THREE.MeshBasicMaterial({
+        map: this.videoTexture,
+        side: THREE.FrontSide,
+        toneMapped: false,
+      });
+      this.videoMaterial.needsUpdate = true;
+    },
+
     addVideoCube: function (videoID) {
       const video = document.getElementById(videoID);
       this.videoTexture = new THREE.VideoTexture(video);
-      const videoMaterial = new THREE.MeshBasicMaterial({
+      this.videoMaterial = new THREE.MeshBasicMaterial({
         map: this.videoTexture,
         side: THREE.FrontSide,
         toneMapped: false,
@@ -1260,15 +1330,20 @@ export default {
       const screenHolder = new THREE.Mesh(cylinderGeometry, material);
       screenHolder.castShadow = true;
       screenHolder.receiveShadow = true;
-      const screen = new THREE.Mesh(planeGeometry, videoMaterial);
+      const screen = new THREE.Mesh(planeGeometry, this.videoMaterial);
       screenHolder.position.setZ(-2.1);
       screenHolder.rotation.set(
         THREE.MathUtils.degToRad(270),
         THREE.MathUtils.degToRad(45),
         THREE.MathUtils.degToRad(180)
       );
+      screen.name = "VideoCubeScreen";
+      screen.userData.name = "VideoCubeScreen";
+      screen.userData.clickable = true;
 
       this.videoCube = new THREE.Group();
+      this.videoCube.name = "VideoCube";
+
       this.videoCube.add(screen);
       this.videoCube.add(screenHolder);
       this.videoCube.castShadow = true;
@@ -1327,7 +1402,13 @@ export default {
   position: fixed;
   top: 0;
   right: 50vw;
+  bottom: 0;
   width: 50vw !important;
+}
+
+#door-transition {
+  background-color: transparent;
+  pointer-events: none;
 }
 
 #iframe_container {
@@ -1343,5 +1424,9 @@ export default {
   right: 0;
   width: 25vw;
   height: 33vh;
+}
+
+.invisible {
+  display: none !important;
 }
 </style>

@@ -1,6 +1,14 @@
 <template lang="">
   <v-app>
-    <v-container d-flex justify center fluid fill-height id="stage-container">
+    <v-container
+      d-flex
+      justify
+      center
+      fluid
+      fill-height
+      id="stage-container"
+      class="stage-container"
+    >
       <v-component
         id="stage"
         v-bind:is="stage"
@@ -8,10 +16,9 @@
           stageClass,
           stageInvisible ? 'invisible' : '',
           toRight ? 'to-right' : '',
-          toRightAnimation ? 'to-right-animation' : '',
         ]"
       ></v-component>
-      <CanvasBackground></CanvasBackground>
+      <CanvasBackground class="canvas-bg-container"></CanvasBackground>
     </v-container>
   </v-app>
 </template>
@@ -25,6 +32,8 @@ import ProjectPageUp from "./projectpages/Up/ProjectPageUp.vue";
 import AboutTrack from "./projectpages/Up/AboutTrack.vue";
 import TrailerTrack from "./projectpages/Up/TrailerTack.vue";
 import CanvasBackground from "./CanvasBackground.vue";
+
+import gsap from "gsap";
 
 export default {
   name: "StartPage",
@@ -56,14 +65,36 @@ export default {
       pPLeft: ProjectPageLeft,
       stageClass: "stage",
       stageInvisible: false,
-      toRightAnimation: false,
       toRight: false,
+      stageComponent: "",
     };
   },
   created() {
     this.$root.$refs.StartPage = this;
   },
+  mounted() {
+    this.stageComponent = document.getElementById("stage");
+  },
   methods: {
+    moveRight: function () {
+      const duration = 3;
+      gsap.fromTo(
+        this.stageComponent,
+        {
+          maxWidth: "50",
+        },
+        {
+          marginRight: 0,
+          padding: "12px",
+          maxWidth: "100",
+          duration: duration,
+          ease: "sine.inOut",
+        }
+      );
+      setTimeout(() => {
+        this.$root.$refs.StartPage.toRight = true;
+      }, duration * 1000);
+    },
     switchTo(name, direction) {
       console.log(name, direction);
       console.log(this.stage);
@@ -88,9 +119,6 @@ export default {
                 "ProjectPageUp"
               );
 
-              // setTimeout(() => {
-              //   this.stage = "ProjectPageUp";
-              // }, 3000);
               break;
             case direction === "right" && canvasBG.inView.right:
               offset = {
@@ -107,10 +135,6 @@ export default {
                 "ProjectPageRight"
               );
 
-              // setTimeout(() => {
-              //   this.stage = "ProjectPageRight";
-              // }, 3000);
-
               break;
             case direction === "left" && canvasBG.inView.left:
               offset = {
@@ -126,10 +150,6 @@ export default {
                 "ProjectPageLeft"
               );
 
-              // setTimeout(() => {
-              //   this.stage = "ProjectPageLeft";
-              // }, 3000);
-
               break;
             case direction === "down" && canvasBG.inView.down:
               offset = {
@@ -144,10 +164,6 @@ export default {
                 this.pPDown.data().room,
                 "ProjectPageDown"
               );
-
-              // setTimeout(() => {
-              //   this.stage = "ProjectPageDown";
-              // }, 3000);
 
               break;
             default:
@@ -171,9 +187,12 @@ export default {
                 "ProjectPageCenter"
               );
 
-              // setTimeout(() => {
-              //   this.stage = "ProjectPageCenter";
-              // }, 3000);
+              if (canvasBG.videoCubeVisible) {
+                canvasBG.placeVideoCubeOnSocket();
+              }
+              if (canvasBG.videoCube.userData.streaming) {
+                canvasBG.updateVideoTexture();
+              }
 
               break;
             default:
@@ -197,9 +216,12 @@ export default {
                 "ProjectPageCenter"
               );
 
-              // setTimeout(() => {
-              //   this.stage = "ProjectPageCenter";
-              // }, 3000);
+              if (canvasBG.videoCubeVisible) {
+                canvasBG.placeVideoCubeOnSocket();
+              }
+              if (canvasBG.videoCube.userData.streaming) {
+                canvasBG.updateVideoTexture();
+              }
 
               break;
             default:
@@ -223,9 +245,12 @@ export default {
                 "ProjectPageCenter"
               );
 
-              // setTimeout(() => {
-              //   this.stage = "ProjectPageCenter";
-              // }, 3000);
+              if (canvasBG.videoCubeVisible) {
+                canvasBG.placeVideoCubeOnSocket();
+              }
+              if (canvasBG.videoCube.userData.streaming) {
+                canvasBG.updateVideoTexture();
+              }
 
               break;
             default:
@@ -249,9 +274,12 @@ export default {
                 "ProjectPageCenter"
               );
 
-              // setTimeout(() => {
-              //   this.stage = "ProjectPageCenter";
-              // }, 3000);
+              if (canvasBG.videoCubeVisible) {
+                canvasBG.placeVideoCubeOnSocket();
+              }
+              if (canvasBG.videoCube.userData.streaming) {
+                canvasBG.updateVideoTexture();
+              }
 
               break;
             default:
@@ -268,33 +296,26 @@ export default {
 <style scoped>
 .stage {
   max-width: 50%;
-  padding: 0;
+  padding: 24px;
   position: relative;
+  z-index: 2;
 }
 
-.to-right-animation {
-  animation: to-the-right ease-in-out 3s 0s 1;
+.stage-container {
+  padding: 0;
 }
 
 .to-right {
+  max-width: 50% !important;
   margin-right: 0;
-  padding: 12px;
-  max-width: 50%;
 }
 
 .invisible {
   display: none !important;
 }
 
-@keyframes to-the-right {
-  0% {
-    max-width: 50%;
-  }
-
-  100% {
-    margin-right: 0;
-    padding: 12px;
-    max-width: 100%;
-  }
+.canvas-bg-container {
+  width: 50vw;
+  padding: 0;
 }
 </style>

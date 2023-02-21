@@ -9,6 +9,7 @@ import handpose from "@tensorflow-models/handpose";
 import * as THREE from "three";
 import gsap from "gsap";
 const createjs = window.createjs;
+import "./assets/main.css";
 
 Vue.config.productionTip = false;
 Vue.use(VueWorker);

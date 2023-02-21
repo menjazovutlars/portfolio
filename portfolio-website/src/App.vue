@@ -13,6 +13,7 @@ const G5 = require("./assets/sounds/G5.wav");
 const H5 = require("./assets/sounds/H5.wav");
 const F4 = require("./assets/sounds/F4.wav");
 const A4 = require("./assets/sounds/A4.wav");
+const DoorOpening = require("./assets/sounds/door-opening.wav");
 export default {
   name: "App",
 
@@ -36,6 +37,11 @@ export default {
     this.sounds.push(f4);
     const a4 = this.createjs.Sound.registerSound(A4, "A4");
     this.sounds.push(a4);
+    const doorOpening = this.createjs.Sound.registerSound(
+      DoorOpening,
+      "DoorOpening"
+    );
+    this.sounds.push(doorOpening);
   },
 };
 </script>

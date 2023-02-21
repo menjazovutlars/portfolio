@@ -1,6 +1,6 @@
 <template>
   <v-container fill-height fluid d-flex justify center>
-    <v-row justify="center" class="in-front top-row">
+    <v-row no-gutters justify="center" class="in-front top-row">
       <v-col>
         <iframe
           src="https://player.vimeo.com/video/513146351?h=4205110b8f"

@@ -1,7 +1,7 @@
 <template>
   <v-container fill-height fluid d-flex justify center>
-    <v-row justify="center" :class="[inFront, topRow]">
-      <v-col>
+    <v-row no-gutters justify="center" :class="[inFront, topRow]">
+      <v-col class="col-12">
         <h1>{{ room }}</h1>
       </v-col>
     </v-row>

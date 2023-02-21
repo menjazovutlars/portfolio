@@ -7,6 +7,7 @@
     }"
   >
     <NavBar v-show="false" />
+
     <StartPage />
     <VideoBoxOffscreen class="videoBoxOffscreen" />
   </v-app>

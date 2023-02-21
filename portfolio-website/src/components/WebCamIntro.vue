@@ -78,18 +78,49 @@ export default {
         this.streamVideo();
       }
     },
+
+    // continueVideo() {
+    //   if (navigator.mediaDevices.getUserMedia) {
+    //     navigator.mediaDevices
+    //       .getUserMedia({ video: true })
+    //       .then((stream) => {
+    //         this.video.srcObject = null;
+    //         this.streamOutput.height = stream
+    //           .getVideoTracks()[0]
+    //           .getSettings().height;
+    //         this.streamOutput.width = stream
+    //           .getVideoTracks()[0]
+    //           .getSettings().width;
+    //         this.video.srcObject = stream;
+    //         this.$root.$refs.CanvasBG.activateVideoCube("camera-feed");
+    //       })
+    //       .catch((error) => {
+    //         alert("Something went wrong!", error);
+    //       });
+    //   }
+    // },
     streamVideo() {
       this.isLoading = true;
       if (navigator.mediaDevices.getUserMedia) {
-        if (this.video.srcObject != null) {
+        if (
+          this.video.srcObject != null ||
+          this.videoOffscreen.srcObject != null
+        ) {
           navigator.mediaDevices
             .getUserMedia({ video: true })
             .then((stream) => {
+              clearInterval(this.interval);
               stream.getTracks().forEach((track) => {
-                clearInterval(this.interval);
                 track.stop();
+                clearInterval(this.interval);
+                console.log(this.interval);
                 this.video.srcObject = null;
+                this.videoOffscreen.srcObject = null;
               });
+              clearInterval(this.interval);
+              tf.dispose();
+              this.$root.$refs.CanvasBG.turnOffScreen();
+              this.$root.$refs.CanvasBG.videoCube.userData.streaming = false;
             });
         } else {
           navigator.mediaDevices
@@ -104,7 +135,19 @@ export default {
               this.video.srcObject = stream;
               this.videoOffscreen.srcObject = stream;
               this.captureMotion(this.videoOffscreen);
-              this.$root.$refs.CanvasBG.addVideoCube("camera-feed");
+              if (!this.$root.$refs.CanvasBG.videoCube) {
+                this.$root.$refs.CanvasBG.addVideoCube("camera-feed");
+                this.$root.$refs.CanvasBG.isLoading = true;
+                this.$root.$refs.CanvasBG.controls.enabled = false;
+                setInterval(() => {
+                  this.$root.$refs.CanvasBG.isLoading = false;
+                  this.$root.$refs.CanvasBG.controls.enabled = true;
+                }, 3000);
+                this.$root.$refs.CanvasBG.videoCube.userData.streaming = true;
+              } else {
+                this.$root.$refs.CanvasBG.updateVideoTexture("camera-feed");
+                this.$root.$refs.CanvasBG.videoCube.userData.streaming = true;
+              }
             })
             .catch((error) => {
               alert("Something went wrong!", error);
@@ -129,7 +172,11 @@ export default {
           console.log("Tensorflow ready.");
           this.interval && clearInterval(this.interval);
           this.interval = setInterval(() => {
-            this.captureHandGesture(stream);
+            if (
+              this.$root.$refs.CanvasBG.videoCube.userData.streaming === true
+            ) {
+              this.captureHandGesture(stream);
+            }
           }, 2000);
         });
       };
@@ -142,7 +189,6 @@ export default {
     },
 
     responseToGesture(gesture, predictions) {
-      this.canvasBG.draw3dLine(predictions);
       switch (gesture) {
         case "index_pointing":
           this.detectHandDirection(predictions);
@@ -167,7 +213,6 @@ export default {
       const dx = palmBase.x - indexFinger.x;
       const dy = palmBase.y - indexFinger.y;
 
-      console.log(dx, dy);
       switch (true) {
         case dx > -130 && dx < 130 && dy > 80:
           this.estimatedDirection = "up";

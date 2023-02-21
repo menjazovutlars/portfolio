@@ -2,13 +2,14 @@
   <v-container fill-height fluid d-flex justify center>
     <v-row
       justify="center"
+      no-gutters
       :class="[inFront, centerRow ? 'center-row' : '', topRow ? 'top-row' : '']"
     >
-      <v-col :class="[colsTextBox.col6 ? 'col-6' : 'col-4']">
-        <component v-bind:is="compTextBox"></component>
-      </v-col>
-      <v-col :class="[colsContBox.col6 ? 'col-6' : 'col-4']">
+      <v-col :class="[colsContBox.col6 ? 'col-12' : 'col-4']">
         <component v-bind:is="compContBox"></component>
+      </v-col>
+      <v-col :class="[colsTextBox.col6 ? 'col-12' : 'col-4']">
+        <component v-bind:is="compTextBox"></component>
       </v-col>
     </v-row>
   </v-container>
@@ -57,8 +58,16 @@ export default {
   z-index: 1000;
 }
 
+.max-width {
+  width: 100%;
+}
+
 .center-row {
   align-items: center !important;
+}
+
+.no-wrap {
+  flex-wrap: nowrap;
 }
 
 .top-row {
