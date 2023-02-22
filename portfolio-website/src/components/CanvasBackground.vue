@@ -2,7 +2,7 @@
   <v-container>
     <canvas id="canvas-bg" :class="['canvas-bg']"></canvas>
     <div id="door-transition" :class="['canvas-bg']"></div>
-    <MiniMap id="canvas-hand"></MiniMap>
+    <!-- <MiniMap id="canvas-hand"></MiniMap> -->
 
     <LoadingScreen :class="[isLoading ? '' : 'invisible']"></LoadingScreen>
     <StageBackground></StageBackground>
@@ -30,7 +30,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import gsap from "gsap";
 
-import MiniMap from "./MiniMap.vue";
+// import MiniMap from "./MiniMap.vue";
 import StageBackground from "./StageBackground.vue";
 import LoadingScreen from "./LoadingScreen.vue";
 
@@ -46,7 +46,7 @@ import LoadingScreen from "./LoadingScreen.vue";
 export default {
   name: "CanvasBG",
   components: {
-    MiniMap,
+    // MiniMap,
     StageBackground,
     LoadingScreen,
   },
@@ -94,17 +94,27 @@ export default {
       miniMap: "",
       raycaster: "",
       clickMouse: new THREE.Vector2(),
-      moveMouse: "",
+      moveMouse: new THREE.Vector2(),
       startPage: "",
       clickable: THREE.Object3D,
+      hoverable: THREE.Object3D,
       isMoving: false,
       isLoading: false,
+      isHovering: false,
       windowView: new THREE.Frustum(),
       inView: {
         up: false,
         right: false,
         down: false,
         left: false,
+        fist: {
+          status: false,
+          href: "",
+        },
+        openPalm: {
+          status: false,
+          href: "",
+        },
       },
       fullWhiteBackground: true,
       activateAnimation: false,
@@ -118,7 +128,7 @@ export default {
     this.canvas = document.getElementById("canvas-bg");
     this.iframeContainer = document.getElementById("iframe_container");
     this.startPage = this.$root.$refs.StartPage;
-    this.miniMap = this.$root.$refs.MiniMap;
+    // this.miniMap = this.$root.$refs.MiniMap;
     this.doorTransition = document.getElementById("door-transition");
     this.initTHREE();
     this.animate();
@@ -211,7 +221,6 @@ export default {
               oZ: -35 * this.scale,
               rotation: 30,
               icon: "",
-              linkTo: "",
             },
           ],
         }
@@ -250,33 +259,33 @@ export default {
               oY: -32 * this.scale,
               oZ: -38 * this.scale,
               rotation: 315,
-              icon: String.fromCodePoint(0xf806),
-              linkTo: "Website",
-            },
-            {
-              oX: 29 * this.scale,
-              oY: -32 * this.scale,
-              oZ: 32 * this.scale,
-              rotation: 225,
               icon: String.fromCodePoint(0xf255),
-              linkTo: "AboutTrack",
-            },
-            {
-              oX: -30 * this.scale,
-              oY: -32 * this.scale,
-              oZ: -35 * this.scale,
-              rotation: 30,
-              icon: String.fromCodePoint(0xf259),
-              linkTo: "TrailerTrack",
-            },
-            {
-              oX: -28 * this.scale,
-              oY: -32 * this.scale,
-              oZ: 33 * this.scale,
-              rotation: 330,
-              icon: String.fromCodePoint(0xf257),
+              gesture: "fist",
               href: "https://github.com/menjazovutlars/track-app/",
+              description: "GitHub",
             },
+            // {
+            //   oX: 29 * this.scale,
+            //   oY: -32 * this.scale,
+            //   oZ: 32 * this.scale,
+            //   rotation: 225,
+            //   icon: String.fromCodePoint(0xf255),
+            // },
+            // {
+            //   oX: -30 * this.scale,
+            //   oY: -32 * this.scale,
+            //   oZ: -35 * this.scale,
+            //   rotation: 30,
+            //   icon: String.fromCodePoint(0xf259),
+            // },
+            // {
+            //   oX: -28 * this.scale,
+            //   oY: -32 * this.scale,
+            //   oZ: 33 * this.scale,
+            //   rotation: 330,
+            //   icon: String.fromCodePoint(0xf257),
+            //   href: "https://github.com/menjazovutlars/track-app/",
+            // },
           ],
         }
       );
@@ -303,36 +312,14 @@ export default {
         {
           objects: [
             {
-              oX: 29 * this.scale,
-              oY: -32 * this.scale,
-              oZ: 32 * this.scale,
-              rotation: 225,
-              icon: String.fromCodePoint(0xf256),
-              linkTo: "AboutTrack",
-            },
-            {
               oX: 25 * this.scale,
               oY: -32 * this.scale,
               oZ: -38 * this.scale,
               rotation: 315,
-              icon: String.fromCodePoint(0xf25b),
-              linkTo: "Website",
-            },
-            {
-              oX: -30 * this.scale,
-              oY: -32 * this.scale,
-              oZ: -35 * this.scale,
-              rotation: 30,
-              icon: String.fromCodePoint(0xf6de),
-              linkTo: "Video",
-            },
-            {
-              oX: -28 * this.scale,
-              oY: -32 * this.scale,
-              oZ: 33 * this.scale,
-              rotation: 330,
-              icon: String.fromCodePoint(0xf806),
-              linkTo: "RandomStuff",
+              icon: String.fromCodePoint(0xf255),
+              gesture: "fist",
+              href: "https://github.com/menjazovutlars/social-whispers/",
+              description: "GitHub",
             },
           ],
         }
@@ -364,32 +351,20 @@ export default {
               oY: -32 * this.scale,
               oZ: 32 * this.scale,
               rotation: 225,
-              icon: String.fromCodePoint(0xf256),
-              linkTo: "AboutTrack",
-            },
-            {
-              oX: 25 * this.scale,
-              oY: -32 * this.scale,
-              oZ: -38 * this.scale,
-              rotation: 315,
-              icon: String.fromCodePoint(0xf25b),
-              linkTo: "Website",
-            },
-            {
-              oX: -30 * this.scale,
-              oY: -32 * this.scale,
-              oZ: -35 * this.scale,
-              rotation: 30,
-              icon: String.fromCodePoint(0xf6de),
-              linkTo: "Video",
+              icon: String.fromCodePoint(0xf255),
+              gesture: "fist",
+              href: "https://github.com/menjazovutlars/motic",
+              description: "GitHub",
             },
             {
               oX: -28 * this.scale,
               oY: -32 * this.scale,
               oZ: 33 * this.scale,
-              rotation: 330,
-              icon: String.fromCodePoint(0xf806),
-              linkTo: "RandomStuff",
+              rotation: 130,
+              icon: String.fromCodePoint(0xf259),
+              gesture: "open_palm",
+              href: "https://imd2019.github.io/SS21-team4real/#motion-capture",
+              description: "Demo",
             },
           ],
         }
@@ -459,11 +434,13 @@ export default {
 
       this.renderer.render(this.scene, this.camera);
 
-      window.addEventListener("mousemove", () => {
+      document.body.addEventListener("mousemove", (e) => {
         this.doorsInView();
+        this.objectsInView();
+        this.hoverObjects(e);
       });
 
-      window.addEventListener("click", (e) => {
+      document.body.addEventListener("click", (e) => {
         if (this.clickable) {
           this.clickable = null;
           return;
@@ -569,9 +546,9 @@ export default {
           // this.$root.$refs.WebCam.continueVideo();
           if (this.videoCubeVisible) {
             this.placeVideoCubeOnSocket();
-          }
-          if (this.videoCube.userData.streaming) {
-            this.updateVideoTexture();
+            if (this.videoCube.userData.streaming) {
+              this.updateVideoTexture();
+            }
           }
 
           console.log("moving to Center");
@@ -621,7 +598,7 @@ export default {
             this.scene.getObjectByName(this.clickable.userData.sign).position,
             offset,
             this.clickable.userData.sign,
-            this.startPage.pPdown.name
+            this.startPage.pPDown.name
           );
           console.log("moving to Project 3");
           break;
@@ -643,6 +620,93 @@ export default {
           break;
       }
     },
+    hoverObjects: function (e) {
+      if (this.hoverable) {
+        this.hoverable = null;
+        return;
+      }
+      if (this.isHovering) {
+        return;
+      }
+
+      this.moveMouse.x = (e.clientX / window.innerWidth) * 4 - 1;
+      this.moveMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      this.raycaster.setFromCamera(this.moveMouse, this.camera);
+      const intersects = this.raycaster.intersectObjects(this.scene.children);
+
+      if (intersects.length > 0 && intersects[0].object.userData.clickable) {
+        this.isHovering = true;
+        this.canvas.style.cursor = "pointer";
+        this.hoverable = intersects[0].object;
+
+        gsap.fromTo(
+          this.hoverable.parent.scale,
+          {
+            x: 1,
+            y: 1,
+            z: 1,
+          },
+          {
+            x: 1.05,
+            y: 1.05,
+            z: 1.05,
+            ease: "sine.inOut",
+            duration: 0.5,
+          }
+        );
+        gsap.fromTo(
+          this.hoverable.parent.scale,
+          {
+            x: 1.05,
+            y: 1.05,
+            z: 1.05,
+          },
+          {
+            x: 1,
+            y: 1,
+            z: 1,
+            ease: "sine.inOut",
+            duration: 0.5,
+            delay: 0.5,
+          }
+        );
+        setTimeout(() => {
+          this.isHovering = false;
+        }, 1000);
+      } else {
+        this.canvas.style.cursor = "auto";
+      }
+    },
+    objectsInView: function () {
+      this.inView.fist.status = false;
+      this.inView.fist.href = "";
+      this.inView.openPalm.status = false;
+      this.inView.openPalm.href = "";
+
+      const objects = this.scene.getObjectsByProperty("name", "Object");
+
+      for (const object of objects) {
+        const intersects = this.windowView.intersectsObject(object);
+        if (
+          intersects &
+          (object.userData.room.name === this.currentRoom.name)
+        ) {
+          switch (object.userData.gesture) {
+            case "fist":
+              this.inView.fist.status = true;
+              this.inView.fist.href = object.userData.href;
+              break;
+            case "open_palm":
+              this.inView.openPalm.status = true;
+              this.inView.openPalm.href = object.userData.href;
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    },
     doorsInView: function () {
       this.inView.up = false;
       this.inView.right = false;
@@ -657,6 +721,7 @@ export default {
           this.camera.matrixWorldInverse
         )
       );
+
       const doors = this.scene.getObjectsByProperty("name", "Door");
 
       for (const door of doors) {
@@ -761,7 +826,7 @@ export default {
           this.currentRoom.visible = true;
           this.currentRoom.children[1].visible = true;
           this.camera.updateProjectionMatrix();
-          this.miniMap.currentRoom = stage;
+          // this.miniMap.currentRoom = stage;
           this.startPage.stage = stage;
           this.startPage.stageInvisible = false;
           this.isMoving = false;
@@ -929,6 +994,7 @@ export default {
       if (this.videoCube.userData.placed) {
         return;
       }
+      const screen = this.scene.getObjectByName("VideoCubeScreen");
       this.videoCube.position.set(-25, -25, -35);
       this.videoCube.rotation.set(
         THREE.MathUtils.degToRad(-15),
@@ -936,6 +1002,7 @@ export default {
         THREE.MathUtils.degToRad(5)
       );
       this.videoCube.userData.placed = true;
+      screen.userData.clickable = true;
     },
 
     turnOffScreen: function () {
@@ -967,9 +1034,11 @@ export default {
         oY = object.oY,
         oZ = object.oZ,
         rotation = object.rotation,
+        gesture = object.gesture,
         icon = object.icon,
         linkTo = object.linkTo,
         href = object.href,
+        description = object.description,
         pX = room.position.x,
         pY = room.position.y,
         pZ = room.position.z;
@@ -997,6 +1066,32 @@ export default {
         metalness: 0.3,
       });
 
+      if (typeof description === "string") {
+        this.fontLoader.load("./assets/fonts/Arimo_Bold.json", (font) => {
+          const objectText = new TextGeometry(description, {
+            font: font,
+            size: 3,
+            height: 0.2,
+            curveSegments: 5,
+            bevelEnabled: true,
+            bevelThickness: 1.5,
+            bevelSize: 0.1,
+            bevelOffset: -0.1,
+            bevelSegments: 5,
+          });
+
+          objectText.computeBoundingBox();
+
+          const text = new THREE.Mesh(objectText, objectMaterial);
+          text.position.set(-2.5, 3, 5);
+          text.castShadow = true;
+          text.receiveShadow = true;
+          text.userData.name = "Description";
+
+          objectModel.add(text);
+        });
+      }
+
       this.fontLoader.load(
         "./assets/fonts/Font Awesome 6 Free Solid_Solid.json",
         (font) => {
@@ -1015,13 +1110,16 @@ export default {
           objectGeometry.computeBoundingBox();
 
           const object = new THREE.Mesh(objectGeometry, objectMaterial);
-          object.position.set(-2.5, 5, 0);
+          object.name = "Object";
+          object.position.set(-2.5, 7, 0);
           object.castShadow = true;
           object.receiveShadow = true;
           object.userData.clickable = true;
           object.userData.name = "Object";
+          object.userData.gesture = gesture;
           object.userData.linkTo = linkTo;
           object.userData.href = href;
+          object.userData.room = room;
           object.userData.defaultStage = projectPage.name;
 
           objectModel.add(object);
@@ -1033,7 +1131,7 @@ export default {
       );
     },
 
-    createText: function (text) {
+    createText: function (text, textsize) {
       const material = new THREE.MeshStandardMaterial({
         color: 0xf7d4e1,
         emissive: 0xf7d4e1,
@@ -1045,7 +1143,7 @@ export default {
       this.fontLoader.load("./assets/fonts/Arimo_Bold.json", async (font) => {
         const textGeometry = new TextGeometry(text, {
           font: font,
-          size: 1,
+          size: textsize,
           height: 0.2,
           curveSegments: 8,
           bevelEnabled: true,
@@ -1065,7 +1163,7 @@ export default {
       });
     },
 
-    addSign: function (direction, text) {
+    addSign: function (direction, text, textsize) {
       const signModel = new THREE.Group();
       const signFrame = new THREE.Group();
       const material = new THREE.MeshStandardMaterial({ color: 0xf2b67c });
@@ -1100,7 +1198,7 @@ export default {
       const sign = new THREE.Mesh(new THREE.PlaneGeometry(11, 5), material);
 
       this.createSymbol(direction);
-      this.createText(text);
+      this.createText(text, textsize);
 
       signModel.add(signFrame, sign);
 
@@ -1201,7 +1299,7 @@ export default {
                 );
                 doorModel.rotation.set(0, THREE.MathUtils.degToRad(0), 0);
 
-                const signModel = this.addSign(i.direction, i.sign);
+                const signModel = this.addSign(i.direction, i.sign, 1);
 
                 signModel.position.set(
                   posX + 0.5,
@@ -1225,7 +1323,7 @@ export default {
                 );
                 doorModel.rotation.set(0, THREE.MathUtils.degToRad(270), 0);
 
-                const signModel = this.addSign(i.direction, i.sign);
+                const signModel = this.addSign(i.direction, i.sign, 0.7);
                 signModel.position.set(
                   width / 2 - 0.3 + posX,
                   -(height / 2) + 25 + posY,
@@ -1248,7 +1346,7 @@ export default {
                 );
                 doorModel.rotation.set(0, THREE.MathUtils.degToRad(180), 0);
 
-                const signModel = this.addSign(i.direction, i.sign);
+                const signModel = this.addSign(i.direction, i.sign, 1);
                 signModel.position.set(
                   posX - 0.5,
                   -(height / 2) + 25 + posY,
@@ -1271,7 +1369,7 @@ export default {
                 );
                 doorModel.rotation.set(0, THREE.MathUtils.degToRad(90), 0);
 
-                const signModel = this.addSign(i.direction, i.sign);
+                const signModel = this.addSign(i.direction, i.sign, 1);
                 signModel.position.set(
                   -(width / 2) + 0.3 + posX,
                   -(height / 2) + 25 + posY,
@@ -1339,7 +1437,7 @@ export default {
       );
       screen.name = "VideoCubeScreen";
       screen.userData.name = "VideoCubeScreen";
-      screen.userData.clickable = true;
+      screen.userData.clickable = false;
 
       this.videoCube = new THREE.Group();
       this.videoCube.name = "VideoCube";

@@ -16,7 +16,7 @@ export default {
   name: "ProjectPageLeft",
   data() {
     return {
-      room: "Project 4",
+      room: "Food Frame",
       topRow: "top-row",
       inFront: "in-front",
     };

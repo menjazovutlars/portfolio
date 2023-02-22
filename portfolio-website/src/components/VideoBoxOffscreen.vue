@@ -1,5 +1,7 @@
 <template>
-  <video ref="video" autoplay class="camera-feed"></video>
+  <keep-alive>
+    <video ref="video" autoplay class="camera-feed"></video>
+  </keep-alive>
 </template>
 
 <script>

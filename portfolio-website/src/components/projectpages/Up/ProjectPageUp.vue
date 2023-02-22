@@ -1,7 +1,7 @@
 <template>
   <v-container fill-height fluid d-flex justify center>
     <v-row no-gutters justify="center" class="in-front content">
-      <v-col>
+      <v-col id="content-col">
         <h1>Hi, ich bin TRACK!</h1>
         <v-row class="citation-row">
           <v-col cols="1" d-flex>
@@ -52,15 +52,14 @@
         <h2>Trailer</h2>
 
         <p>
-          <iframe
-            src="https://player.vimeo.com/video/513146351?h=4205110b8f"
-            width="640"
-            height="360"
-            frameborder="0"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowfullscreen
-            id="iframe_trailerTrack"
-          ></iframe>
+          <video
+            src="@/assets/videos/trailer_track.mp4"
+            poster="@/assets/videos/thumbnail_track.jpg"
+            :width="width"
+            :height="height"
+            controls
+            id="trailer_track"
+          ></video>
         </p>
       </v-col>
     </v-row>
@@ -75,11 +74,31 @@ export default {
   name: "ProjectPageUp",
   data() {
     return {
-      room: "Project 1",
+      room: "Track",
+      width: "",
+      height: "",
     };
   },
   created() {
     this.$root.$refs.ProjectPageUp = this;
+  },
+  mounted() {
+    this.resizeIFrame();
+
+    addEventListener("resize", this.resizeIFrame);
+  },
+  methods: {
+    resizeIFrame: function () {
+      const col = document.getElementById("content-col"),
+        width = col.offsetWidth,
+        ratio = 360 / 640,
+        height = width * ratio;
+
+      console.log(width, height, ratio);
+
+      this.width = width;
+      this.height = height;
+    },
   },
 };
 </script>

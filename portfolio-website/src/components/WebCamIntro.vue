@@ -189,10 +189,21 @@ export default {
     },
 
     responseToGesture(gesture, predictions) {
+      console.log(gesture);
       switch (gesture) {
         case "index_pointing":
           this.detectHandDirection(predictions);
-          this.canvas.drawHand(predictions);
+          // this.canvas.drawHand(predictions);
+          break;
+        case "fist":
+          if (this.canvasBG.inView.fist.status) {
+            this.canvasBG.openLink(this.canvasBG.inView.fist.href);
+          }
+          break;
+        case "open_palm":
+          if (this.canvasBG.inView.openPalm.status) {
+            this.canvasBG.openLink(this.canvasBG.inView.openPalm.href);
+          }
           break;
         default:
           break;
@@ -278,12 +289,20 @@ export default {
       indexPointing.addCurl(fp.Finger.Ring, fp.FingerCurl.FullCurl, 0.9);
       indexPointing.addCurl(fp.Finger.Pinky, fp.FingerCurl.FullCurl, 0.9);
 
+      const fist = new fp.GestureDescription("fist");
+      fist.addCurl(fp.Finger.Thump, fp.FingerCurl.FullCurl, 0.9);
+      fist.addCurl(fp.Finger.Index, fp.FingerCurl.FullCurl, 0.9);
+      fist.addCurl(fp.Finger.Middle, fp.FingerCurl.FullCurl, 0.9);
+      fist.addCurl(fp.Finger.Ring, fp.FingerCurl.FullCurl, 0.9);
+      fist.addCurl(fp.Finger.Pinky, fp.FingerCurl.FullCurl, 0.9);
+
       this.GE = new fp.GestureEstimator([
         fp.Gestures.VictoryGesture,
         fp.Gestures.ThumbsUpGesture,
         openPalm,
         halfOpenPalm,
         indexPointing,
+        fist,
       ]);
     },
     estimateHandGesture(predictions) {

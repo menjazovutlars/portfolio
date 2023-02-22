@@ -301,10 +301,6 @@ export default {
   z-index: 2;
 }
 
-.stage-container {
-  padding: 0;
-}
-
 .to-right {
   max-width: 50% !important;
   margin-right: 0;
